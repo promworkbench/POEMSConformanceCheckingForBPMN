@@ -1,4 +1,4 @@
-package org.processmining.tests.newpackage;
+package org.processmining.tests.sccwbpmnnpos;
 import junit.framework.TestCase;
 
 import org.junit.Test;
