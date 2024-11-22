@@ -3,25 +3,39 @@ package org.processmining.sccwbpmnnpos.plugins;
 import java.util.Collection;
 
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
+import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
-import org.processmining.sccwbpmnnpos.algorithms.YourAlgorithm;
+import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.YourAlgorithm;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimplifier;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.impl.BasicXLogSimplifier;
 import org.processmining.sccwbpmnnpos.connections.YourConnection;
 import org.processmining.sccwbpmnnpos.dialogs.YourDialog;
 import org.processmining.sccwbpmnnpos.help.YourHelp;
+import org.processmining.sccwbpmnnpos.models.POEMSCCResults;
 import org.processmining.sccwbpmnnpos.models.YourFirstInput;
 import org.processmining.sccwbpmnnpos.models.YourOutput;
 import org.processmining.sccwbpmnnpos.models.YourSecondInput;
+import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
+import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLogVariant;
+import org.processmining.sccwbpmnnpos.models.utils.activity.SimpleActivityRegistry;
 import org.processmining.sccwbpmnnpos.parameters.YourParameters;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
 
-@Plugin(name = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", parameterLabels = {"Stochastic BPMN", "Event Log", "Model Probability Mass"},
-        returnLabels = {"Model-Log Conformance measure"}, returnTypes = {YourOutput.class}, help = YourHelp.TEXT)
+@Plugin(
+        name = "BPMN POEMS Conformance Checking",
+        parameterLabels = {"Stochastic BPMN", "Event Log", "Model Probability Mass"},
+        returnLabels = {"Model-Log Conformance measure"},
+        returnTypes = {POEMSCCResults.class},
+        help = YourHelp.TEXT,
+        level = PluginLevel.Local
+)
 public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
 
     /**
@@ -34,10 +48,16 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      * @return The output.
      */
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar.kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", requiredParameterLabels = {0, 1, 2})
-    public YourOutput run(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log, YourParameters parameters) {
+    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", requiredParameterLabels = {0, 1, 2}, help = "")
+    public POEMSCCResults run(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log, YourParameters parameters) {
         // Apply the algorithm depending on whether a connection already exists.
-
+        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new SimpleActivityRegistry());
+        SimplifiedEventLog simpleLog = simplifier.simplify(log);
+        System.out.println(simpleLog.getTotalTraces());
+        for (SimplifiedEventLogVariant variant : simpleLog) {
+            System.out.println(variant);
+            break;
+        }
         return null;
     }
 
@@ -45,17 +65,22 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      * The plug-in variant that runs in any context and uses the default parameters.
      *
      * @param context The context to run in.
-     * @param input1  The first input.
-     * @param input2  The second input.
+     * @param sBpmnDiagram  The first input.
+     * @param log  The second input.
      * @return The output.
      */
-    @UITopiaVariant(affiliation = "Your affiliation", author = "Your name", email = "Your e-mail address")
-    @PluginVariant(variantLabel = "Your plug-in name, parameters", requiredParameterLabels = {0, 1})
-    public YourOutput runDefault(PluginContext context, YourFirstInput input1, YourSecondInput input2) {
-        // Get the default parameters.
-        YourParameters parameters = new YourParameters(input1, input2);
+    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "Yaleksandar.kuzmanoski@rwth-aachen.de")
+    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", requiredParameterLabels = {0, 1})
+    public YourOutput runDefault(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log) {
         // Apply the algorithm depending on whether a connection already exists.
-        return runConnections(context, input1, input2, parameters);
+        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new SimpleActivityRegistry());
+        SimplifiedEventLog simpleLog = simplifier.simplify(log);
+        System.out.println(simpleLog.getTotalTraces());
+        for (SimplifiedEventLogVariant variant : simpleLog) {
+            System.out.println(variant);
+            break;
+        }
+        return null;
     }
 
     /**
@@ -121,7 +146,7 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      */
     private YourOutput runConnections(PluginContext context, YourFirstInput input1, YourSecondInput input2, YourParameters parameters) {
         if (parameters.isTryConnections()) {
-            // Try to found a connection that matches the inputs and the parameters.
+            // Try to find a connection that matches the inputs and the parameters.
             Collection<YourConnection> connections;
             try {
                 connections = context.getConnectionManager().getConnections(
