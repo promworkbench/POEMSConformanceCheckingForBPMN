@@ -24,7 +24,9 @@ public class SimpleMultisetUtils extends AbstractMultisetUtils {
     @Override
     public <E> Multiset<E> difference(Multiset<E> mSet1, Multiset<E> mSet2) {
         Multiset<E> result = multisetFactory.getDefault(mSet1);
-        result.removeAll(mSet2);
+        for (ReadOnlyMultiset.Entry<E> eEntry : mSet2.entrySet()) {
+            result.setCount(eEntry.getElement(), Math.max(result.count(eEntry.getElement()) - eEntry.getCount(), 0));
+        }
         return result;
     }
 

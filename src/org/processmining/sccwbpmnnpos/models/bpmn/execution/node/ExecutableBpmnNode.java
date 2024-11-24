@@ -49,4 +49,6 @@ public interface ExecutableBpmnNode {
         int timesEnabled = getTimesEnabledIn(marking);
         return this.fire(marking, timesEnabled);
     }
+
+    String toString();
 }

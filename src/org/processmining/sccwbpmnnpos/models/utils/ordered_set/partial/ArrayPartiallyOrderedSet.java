@@ -2,6 +2,7 @@ package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.partialorder.PartialOrderUtils;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.*;
@@ -45,10 +46,45 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
         setPredecessor(idx, predIdx);
     }
 
-    private void setPredecessor(int elementIdx, int predecessorIdx) throws PartialOrderLoopNotAllowedException {
-        if (elementIdx < predecessorIdx) {
-            throw new PartialOrderLoopNotAllowedException(getElement(predecessorIdx), getElement(elementIdx));
+    private List<Integer> getLoopSequenceRecursive(int elementIdx, int predecessorIdx) {
+        if (elementIdx == predecessorIdx) {
+            LinkedList<Integer> loop = new LinkedList<>();
+            loop.add(predecessorIdx);
+            return loop;
         }
+        Set<Integer> currentPredecessors = predecessors.get(predecessorIdx);
+        for (Integer currentPredecessor : currentPredecessors) {
+            List<Integer> loop = getLoopSequenceRecursive(elementIdx, currentPredecessor);
+            if (loop == null) continue;
+            loop.add(predecessorIdx);
+            return loop;
+        }
+        return null;
+    }
+
+    private List<Integer> getLoopSequence(int elementIdx, int predecessorIdx) {
+        List<Integer> loopSequence = getLoopSequenceRecursive(elementIdx, predecessorIdx);
+        if (Objects.isNull(loopSequence)) {
+            return null;
+        }
+        loopSequence.add(elementIdx);
+        return loopSequence;
+    }
+
+    public List<ELEMENT> getLoopSequence(ELEMENT element, ELEMENT predecessor) {
+        List<Integer> loopSequence = getLoopSequence(getIndex(element), getIndex(predecessor));
+        if (Objects.isNull(loopSequence)) {
+            return null;
+        }
+        return loopSequence.stream().map(this::getElement).collect(Collectors.toList());
+
+    }
+
+    private void setPredecessor(int elementIdx, int predecessorIdx) throws PartialOrderLoopNotAllowedException {
+//        if (elementIdx < predecessorIdx) {
+//            List<Integer> loopSequence = getLoopSequence(elementIdx, predecessorIdx);
+//            throw new PartialOrderLoopNotAllowedException(loopSequence.stream().map(this::getElement).collect(Collectors.toList()));
+//        }
         predecessors.get(elementIdx).add(predecessorIdx);
     }
 
@@ -93,16 +129,25 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
         return elementCollection.stream().map(elements::get).collect(Collectors.toSet());
     }
 
+    private Set<Integer> getPredecessors(int idx) {
+        Set<Integer> predecessorsIdx = predecessors.get(idx);
+        if (Objects.isNull(predecessorsIdx) || predecessorsIdx.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<Integer> result = new HashSet<>(predecessorsIdx);
+        for (Integer predecessor : predecessorsIdx) {
+            result.addAll(getPredecessors(predecessor));
+        }
+        return result;
+    }
+
     @Override
     public Set<ELEMENT> getPredecessors(ELEMENT element) {
         Integer idx = getIndex(element);
         if (Objects.isNull(idx)) {
             return Collections.emptySet();
         }
-        Set<Integer> predecessorsIdx = predecessors.get(idx);
-        if (Objects.isNull(predecessorsIdx) || predecessorsIdx.isEmpty()) {
-            return Collections.emptySet();
-        }
+        Set<Integer> predecessorsIdx = getPredecessors(idx);
         return toElements(predecessorsIdx);
     }
 
@@ -222,5 +267,55 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
             result.add(new Entry<>(element, toElements(predecessors.get(idx++))));
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("PO{");
+//        sb.append(elements);
+//        sb.append(", [");
+//        int i = 0;
+//        for (Set<Integer> iPredecessors : predecessors) {
+//            for (Integer iPredecessor : iPredecessors) {
+//                sb.append("(");
+//                sb.append(getElement(iPredecessor));
+//                sb.append(" < ");
+//                sb.append(getElement(i));
+//                sb.append("), ");
+//            }
+//            i++;
+//        }
+//        sb = new StringBuilder(sb.substring(0, sb.length() - 2));
+//        sb.append("]");
+//        sb.append("}");
+//        return sb.toString();
+        return toGraphVizString();
+    }
+
+    public String toGraphVizString() {
+        StringBuilder buildGViz = new StringBuilder("digraph G {\n");
+
+        for (int i = 0; i < predecessors.size(); i++) {
+            Set<Integer> iPredecessors = predecessors.get(i);
+            for (Integer predecessor : iPredecessors) {
+                buildGViz.append("\"" + getElement(predecessor) + "\" -> \"" + getElement(i) + "\";\n");
+            }
+            if (iPredecessors.isEmpty() && !hasSuccessors(i)) {
+                buildGViz.append("\"" + getElement(i) + "\";\n");
+            }
+        }
+
+        buildGViz.append("}");
+        return buildGViz.toString();
+    }
+
+    private boolean hasSuccessors(int idx) {
+        for (Set<Integer> predecessor : predecessors) {
+            if (predecessor.contains(idx)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

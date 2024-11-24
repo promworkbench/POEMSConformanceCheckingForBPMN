@@ -1,20 +1,17 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions;
 
+import java.util.Collection;
+import java.util.List;
+
 public class PartialOrderLoopNotAllowedException extends Exception {
-    private final Object predecessor;
-    private final Object successor;
+    private final List<? extends Object> loopSequence;
 
-    public PartialOrderLoopNotAllowedException(Object predecessor, Object successor) {
-        super(String.format("Making %s a predecessor of %s creates a loop.", predecessor, successor));
-        this.predecessor = predecessor;
-        this.successor = successor;
+    public PartialOrderLoopNotAllowedException(final List<? extends Object> loopSequence) {
+        super(String.format("Loop sequence: %s", loopSequence));
+        this.loopSequence = loopSequence;
     }
 
-    public Object getPredecessor() {
-        return predecessor;
-    }
-
-    public Object getSuccessor() {
-        return successor;
+    public List<? extends Object> getLoopSequence() {
+        return loopSequence;
     }
 }

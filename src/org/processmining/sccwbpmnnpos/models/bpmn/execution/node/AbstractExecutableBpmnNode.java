@@ -147,4 +147,10 @@ public abstract class AbstractExecutableBpmnNode implements ExecutableBpmnNode {
 //        assert Objects.equals(node, outEdge.getSource());
 //        return null;
 //    }
+
+
+    @Override
+    public String toString() {
+        return node.toString();
+    }
 }

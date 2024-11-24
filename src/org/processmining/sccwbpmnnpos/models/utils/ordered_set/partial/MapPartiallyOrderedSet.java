@@ -1,5 +1,6 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.*;
@@ -15,7 +16,7 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
     @Override
     public void setPredecessor(ELEMENT element, ELEMENT predecessor) throws PartialOrderLoopNotAllowedException {
         if (isReachable(element, predecessor)) {
-            throw new PartialOrderLoopNotAllowedException(predecessor, element);
+            throw new PartialOrderLoopNotAllowedException(new LinkedList<>());
         }
         map.computeIfAbsent(element, k -> new HashSet<>()).add(element);
     }
@@ -24,7 +25,7 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
     public void setPredecessors(ELEMENT element, Collection<ELEMENT> predecessors) throws PartialOrderLoopNotAllowedException {
         for (ELEMENT predecessor : predecessors) {
             if (isReachable(element, predecessor)) {
-                throw new PartialOrderLoopNotAllowedException(element, predecessor);
+                throw new PartialOrderLoopNotAllowedException(new LinkedList<>());
             }
         }
         map.computeIfAbsent(element, k -> new HashSet<>()).addAll(predecessors);
@@ -151,6 +152,11 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
     @Override
     public Set<Entry<ELEMENT>> getEntrySet() {
         return map.entrySet().stream().map(e -> new PartiallyOrderedSet.Entry<>(e.getKey(), e.getValue())).collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<ELEMENT> getLoopSequence(ELEMENT element, ELEMENT predecessor) {
+        throw new NotImplementedException();
     }
 
     @Override

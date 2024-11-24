@@ -4,6 +4,7 @@ import org.processmining.sccwbpmnnpos.models.utils.ordered_set.OrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface PartiallyOrderedSet<ELEMENT> extends OrderedSet<ELEMENT>, Set<ELEMENT> {
@@ -18,6 +19,8 @@ public interface PartiallyOrderedSet<ELEMENT> extends OrderedSet<ELEMENT>, Set<E
     Set<ELEMENT> getEnabled(Collection<ELEMENT> executed);
 
     Set<Entry<ELEMENT>> getEntrySet();
+
+    List<ELEMENT> getLoopSequence(ELEMENT element, ELEMENT predecessor);
 
     class Entry<E> {
         private final E element;
@@ -36,4 +39,6 @@ public interface PartiallyOrderedSet<ELEMENT> extends OrderedSet<ELEMENT>, Set<E
             return predecessors;
         }
     }
+
+    String toString();
 }

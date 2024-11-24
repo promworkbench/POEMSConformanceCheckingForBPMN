@@ -9,4 +9,6 @@ public interface BpmnNodeFiringOption {
     String getLabel();
 
     BpmnMarking getMarking();
+
+    String toString();
 }

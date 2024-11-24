@@ -18,13 +18,11 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.task.Executable
 import java.util.Objects;
 
 public class SimpleExecutableBpmnNodeFactory implements ExecutableBpmnNodeFactory {
-    private final BPMNDiagram model;
     private final BpmnTokenFactory tokenFactory;
     private final BpmnMarkingFactory markingFactory;
     private final BpmnMarkingUtils markingUtils;
 
-    public SimpleExecutableBpmnNodeFactory(BPMNDiagram model, BpmnTokenFactory tokenFactory, BpmnMarkingFactory markingFactory, BpmnMarkingUtils markingUtils) {
-        this.model = model;
+    public SimpleExecutableBpmnNodeFactory(BpmnTokenFactory tokenFactory, BpmnMarkingFactory markingFactory, BpmnMarkingUtils markingUtils) {
         this.tokenFactory = tokenFactory;
         this.markingFactory = markingFactory;
         this.markingUtils = markingUtils;
@@ -33,7 +31,7 @@ public class SimpleExecutableBpmnNodeFactory implements ExecutableBpmnNodeFactor
     @Override
     public ExecutableBpmnNode create(BPMNNode node) {
         assert Objects.nonNull(node);
-        assert Objects.nonNull(model);
+        BPMNDiagram model = (BPMNDiagram) node.getGraph();
         if (node instanceof Gateway) {
             final Gateway gateway = (Gateway) node;
             switch (gateway.getGatewayType()) {

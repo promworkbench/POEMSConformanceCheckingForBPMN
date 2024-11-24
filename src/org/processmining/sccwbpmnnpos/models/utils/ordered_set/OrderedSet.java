@@ -13,4 +13,6 @@ public interface OrderedSet<ELEMENT> extends Collection<ELEMENT> {
     boolean isEnabled(ELEMENT element, Collection<ELEMENT> executed);
 
     int size();
+
+    String toString();
 }

@@ -1,7 +1,5 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.model;
 
-import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.PartialOrder;
-import org.processmining.partialorder.ptrace.model.PTrace;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagramImpl;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.BpmnNodeFiringOption;
@@ -23,7 +21,9 @@ public class StochasticBpmnToStochasticLanguageConverterImpl implements Stochast
     private final BpmnMarkingFactory markingFactory;
     private final CartesianProductCalculator cartesianProductCalculator;
 
-    public StochasticBpmnToStochasticLanguageConverterImpl(ExecutableBpmnNodeFactory nodeFactory, BpmnMarkingFactory markingFactory, CartesianProductCalculator cartesianProductCalculator) {
+    public StochasticBpmnToStochasticLanguageConverterImpl(ExecutableBpmnNodeFactory nodeFactory,
+                                                           BpmnMarkingFactory markingFactory,
+                                                           CartesianProductCalculator cartesianProductCalculator) {
         this.nodeFactory = nodeFactory;
         this.markingFactory = markingFactory;
         this.cartesianProductCalculator = cartesianProductCalculator;
@@ -38,13 +38,13 @@ public class StochasticBpmnToStochasticLanguageConverterImpl implements Stochast
             BpmnMarking initialMarking = executeOnce(startNodes, markingFactory.getEmpty(bpmnDiagram));
             Set<BpmnMarking> markings = new HashSet<>();
             markings.add(initialMarking);
-        do {
-            Set<BpmnMarking> tmp = new HashSet<>();
-            for (BpmnMarking marking : markings) {
-                tmp.addAll(executeNextBatch(executableDiagram, marking));
-            }
-            System.out.println(markings);
-        } while(markings.size() > 1 || !markings.iterator().next().isEmpty());
+            do {
+                Set<BpmnMarking> tmp = new HashSet<>();
+                for (BpmnMarking marking : markings) {
+                    tmp.addAll(executeNextBatch(executableDiagram, marking));
+                }
+                System.out.println(markings);
+            } while (markings.size() > 1 || !markings.iterator().next().isEmpty());
         } catch (BpmnNodeNotEnabledException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +73,8 @@ public class StochasticBpmnToStochasticLanguageConverterImpl implements Stochast
         if (nodes.isEmpty()) {
             return marking;
         }
-        Collection<ExecutableBpmnNode> nonChoiceNodes = nodes.stream().filter(n -> !n.isChoice() || n.getFiringOptions().size() == 1).collect(Collectors.toList());
+        Collection<ExecutableBpmnNode> nonChoiceNodes =
+                nodes.stream().filter(n -> !n.isChoice() || n.getFiringOptions().size() == 1).collect(Collectors.toList());
         if (nonChoiceNodes.isEmpty()) {
             return marking;
         }
