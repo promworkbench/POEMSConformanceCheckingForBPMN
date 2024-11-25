@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.algorithms.inputs.model;
+package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn;
 
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagramImpl;
@@ -16,14 +16,14 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class StochasticBpmnToStochasticLanguageConverterImpl implements StochasticBpmnToStochasticLanguageConverter {
+public class StochasticBpmn2StochasticLanguageConverterImpl implements StochasticBpmn2StochasticLanguageConverter {
     private final ExecutableBpmnNodeFactory nodeFactory;
     private final BpmnMarkingFactory markingFactory;
     private final CartesianProductCalculator cartesianProductCalculator;
 
-    public StochasticBpmnToStochasticLanguageConverterImpl(ExecutableBpmnNodeFactory nodeFactory,
-                                                           BpmnMarkingFactory markingFactory,
-                                                           CartesianProductCalculator cartesianProductCalculator) {
+    public StochasticBpmn2StochasticLanguageConverterImpl(ExecutableBpmnNodeFactory nodeFactory,
+                                                          BpmnMarkingFactory markingFactory,
+                                                          CartesianProductCalculator cartesianProductCalculator) {
         this.nodeFactory = nodeFactory;
         this.markingFactory = markingFactory;
         this.cartesianProductCalculator = cartesianProductCalculator;

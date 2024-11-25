@@ -2,8 +2,8 @@ package org.processmining.sccwbpmnnpos.console;
 
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.statespace.Bpmn2MinimalReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.statespace.Bpmn2MinimalReachabilityGraphConverterImpl;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2ReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2PartiallyOrderedReachabilityGraphConverterImpl;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.BpmnMarkingFactory;
@@ -20,14 +20,10 @@ import org.processmining.sccwbpmnnpos.models.utils.multiset.factory.MultisetFact
 import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.MultisetUtils;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.SimpleMultisetUtils;
 import org.processmining.stochasticbpmn.algorithms.diagram.builder.BpmnDiagramBuilderImpl;
-import org.processmining.stochasticbpmn.algorithms.diagram.builder.StochasticBPMNDiagramBuilderImpl;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.BpmnDiagramReader;
-import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
 import org.processmining.stochasticbpmn.algorithms.reader.BpmnInputStreamReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectFilePathReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
-import org.processmining.stochasticbpmn.algorithms.reader.StochasticBPMNInputStreamReader;
-import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
 
 public class ExampleRunner {
     public static void main(String[] args) {
@@ -41,7 +37,7 @@ public class ExampleRunner {
                         markingFactory, markingUtils));
 
         CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
-        Bpmn2MinimalReachabilityGraphConverter bpmn2StochasticLanguageConverter = new Bpmn2MinimalReachabilityGraphConverterImpl(executableNodeFactory, markingFactory, cartesianProductCalculator);
+        Bpmn2ReachabilityGraphConverter bpmn2StochasticLanguageConverter = new Bpmn2PartiallyOrderedReachabilityGraphConverterImpl(executableNodeFactory, markingFactory, cartesianProductCalculator);
         ObjectReader<String, BPMNDiagram> diagramReader = new ObjectFilePathReader<>(new BpmnDiagramReader(new BpmnInputStreamReader(), new BpmnDiagramBuilderImpl()));
         try {
             BPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/Unbounded/Instance - BPMN - Unbounded Completely 1.bpmn");

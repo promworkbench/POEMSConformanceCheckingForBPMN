@@ -2,11 +2,11 @@ package org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.bpm
 
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.PoemsConformanceChecking;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.SimplifiedLogToStochasticLanguageConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.StochasticBpmnToStochasticLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.StochasticBpmn2StochasticLanguageConverter;
 import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.trace.partial_order.PartiallyOrderedTrace;
 import org.processmining.sccwbpmnnpos.models.utils.trace.total_order.TotallyOrderedTrace;
-import org.processmining.sccwbpmnnpos.models.conformance.result.ConformanceCheckingResult;
+import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.ConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
 import org.processmining.sccwbpmnnpos.models.stochastic_language.StochasticLanguage;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
@@ -14,9 +14,9 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
 public class BpmnPoemsConformanceCheckingInternalImpl implements BpmnPoemsConformanceCheckingInternal {
     private final PoemsConformanceChecking poemsConformanceChecking;
     private final SimplifiedLogToStochasticLanguageConverter logToStochasticLanguageConverter;
-    private final StochasticBpmnToStochasticLanguageConverter modelToStochasticLanguageConverter;
+    private final StochasticBpmn2StochasticLanguageConverter modelToStochasticLanguageConverter;
 
-    public BpmnPoemsConformanceCheckingInternalImpl(PoemsConformanceChecking poemsConformanceChecking, SimplifiedLogToStochasticLanguageConverter logToStochasticLanguageConverter, StochasticBpmnToStochasticLanguageConverter modelToStochasticLanguageConverter) {
+    public BpmnPoemsConformanceCheckingInternalImpl(PoemsConformanceChecking poemsConformanceChecking, SimplifiedLogToStochasticLanguageConverter logToStochasticLanguageConverter, StochasticBpmn2StochasticLanguageConverter modelToStochasticLanguageConverter) {
         this.poemsConformanceChecking = poemsConformanceChecking;
         this.logToStochasticLanguageConverter = logToStochasticLanguageConverter;
         this.modelToStochasticLanguageConverter = modelToStochasticLanguageConverter;

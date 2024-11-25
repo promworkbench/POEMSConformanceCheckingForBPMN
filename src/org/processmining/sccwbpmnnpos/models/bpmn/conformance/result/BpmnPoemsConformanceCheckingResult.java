@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.models.conformance.result;
+package org.processmining.sccwbpmnnpos.models.bpmn.conformance.result;
 
 public class BpmnPoemsConformanceCheckingResult implements ConformanceCheckingResult {
     private final double conformanceValue;

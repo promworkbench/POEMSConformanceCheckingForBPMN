@@ -2,6 +2,7 @@ package org.processmining.sccwbpmnnpos.models.bpmn.execution.marking;
 
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
+import org.processmining.models.graphbased.directed.bpmn.elements.Event;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.BpmnToken;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.Multiset;
 
@@ -106,6 +107,25 @@ public class MultisetBpmnMarking implements BpmnMarking {
     @Override
     public List<BpmnToken> asList() {
         return tokens.asList();
+    }
+
+    @Override
+    public boolean isInitial() {
+        if (tokens.isEmpty()) {
+            return false;
+        }
+        for (BpmnToken token : tokens) {
+            BPMNNode sourceNode = token.getSourceNode();
+            if (!(sourceNode instanceof Event && Event.EventType.START.equals(((Event) sourceNode).getEventType()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isFinal() {
+        return isEmpty();
     }
 
     @Override

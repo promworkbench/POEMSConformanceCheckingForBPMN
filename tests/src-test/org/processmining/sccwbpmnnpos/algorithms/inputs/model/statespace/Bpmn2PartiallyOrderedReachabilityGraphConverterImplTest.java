@@ -4,6 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2PartiallyOrderedReachabilityGraphConverterImpl;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2ReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.BpmnMarkingFactory;
@@ -25,13 +29,15 @@ import org.processmining.stochasticbpmn.algorithms.reader.BpmnInputStreamReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectFilePathReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
 
-public class Bpmn2MinimalReachabilityGraphConverterImplTest {
+public class Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest {
+    private static final String modelsFolder = "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research" +
+            "/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/";
     private final ObjectReader<String, BPMNDiagram> diagramReader;
-    private final Bpmn2MinimalReachabilityGraphConverter bpmnReachabilityGraphCreator;
-    private static final String modelsFolder = "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/";
+    private final Bpmn2ReachabilityGraphConverter bpmnReachabilityGraphCreator;
 
-    public Bpmn2MinimalReachabilityGraphConverterImplTest() {
-        this.diagramReader = new ObjectFilePathReader<>(new BpmnDiagramReader(new BpmnInputStreamReader(),new BpmnDiagramBuilderImpl()));
+    public Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest() {
+        this.diagramReader = new ObjectFilePathReader<>(new BpmnDiagramReader(new BpmnInputStreamReader(),
+                new BpmnDiagramBuilderImpl()));
         MultisetFactory multisetFactory = new DefaultMultisetFactory();
         MultisetUtils multisetUtils = new SimpleMultisetUtils(multisetFactory);
         BpmnTokenFactory tokenFactory = new SimpleBpmnTokenFactory();
@@ -41,7 +47,9 @@ public class Bpmn2MinimalReachabilityGraphConverterImplTest {
                 new CachedExecutableBpmnNodeFactory(new SimpleExecutableBpmnNodeFactory(tokenFactory,
                         markingFactory, markingUtils));
         CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
-        this.bpmnReachabilityGraphCreator = new Bpmn2MinimalReachabilityGraphConverterImpl(executableNodeFactory, markingFactory, cartesianProductCalculator);
+        this.bpmnReachabilityGraphCreator =
+                new Bpmn2PartiallyOrderedReachabilityGraphConverterImpl(executableNodeFactory, markingFactory,
+                        cartesianProductCalculator);
     }
 
     private BPMNDiagram readDiagram(String fileName) throws Exception {
@@ -62,9 +70,18 @@ public class Bpmn2MinimalReachabilityGraphConverterImplTest {
         Assert.assertNotNull(rg);
     }
 
-    @Test(expected = BpmnUnboundedException.class)
+    @Test(expected = BpmnNoOptionToCompleteException.class)
     public void simpleLiveLockNoOptionToComplete() throws Exception {
-        BPMNDiagram diagram = readDiagram("No option to complete/Live Lock/Instance - BPMN - Simple live-lock no option to complete.bpmn");
+        BPMNDiagram diagram = readDiagram("No option to complete/Live Lock/Instance - BPMN - Simple live-lock no " +
+                "option to complete.bpmn");
+        TransitionSystem rg = bpmnReachabilityGraphCreator.convert(diagram);
+        Assert.assertNotNull(rg);
+    }
+
+    @Test()
+    public void partiallyLiveLocked() throws Exception {
+        BPMNDiagram diagram = readDiagram("No option to complete/Live Lock/Instance - BPMN - Partially live-locked" +
+                ".bpmn");
         TransitionSystem rg = bpmnReachabilityGraphCreator.convert(diagram);
         Assert.assertNotNull(rg);
     }
@@ -78,14 +95,21 @@ public class Bpmn2MinimalReachabilityGraphConverterImplTest {
 
     @Test
     public void challenge2Bounded() throws Exception {
-        BPMNDiagram diagram = readDiagram("Bounded/Challenging/Instances - BPMN - 2-bounded Challenging.bpmn");
+        BPMNDiagram diagram = readDiagram("Bounded/Challenging/Instance - BPMN - 2-bounded Challenging.bpmn");
         TransitionSystem rg = bpmnReachabilityGraphCreator.convert(diagram);
         Assert.assertNotNull(rg);
     }
 
     @Test
     public void challenge2Bounded2() throws Exception {
-        BPMNDiagram diagram = readDiagram("Bounded/Challenging/Instances - BPMN - 2-bounded Challenging 2.bpmn");
+        BPMNDiagram diagram = readDiagram("Bounded/Challenging/Instance - BPMN - 2-bounded Challenging 2.bpmn");
+        TransitionSystem rg = bpmnReachabilityGraphCreator.convert(diagram);
+        Assert.assertNotNull(rg);
+    }
+
+    @Test
+    public void challengeNonLoopBounded() throws Exception {
+        BPMNDiagram diagram = readDiagram("Bounded/Challenging/Instance - BPMN - Non loop bounded Challenging.bpmn");
         TransitionSystem rg = bpmnReachabilityGraphCreator.convert(diagram);
         Assert.assertNotNull(rg);
     }

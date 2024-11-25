@@ -49,6 +49,10 @@ public class BpmnEdgeToken implements BpmnToken {
 
     @Override
     public String toString() {
-        return edge.getLabel();
+        String label = edge.getLabel();
+        if (Objects.isNull(label) || label.isEmpty()) {
+            return edge.getEdgeID().toString();
+        }
+        return label;
     }
 }

@@ -2,6 +2,7 @@ package org.processmining.sccwbpmnnpos.models.bpmn.execution.node.gateway;
 
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
+import org.processmining.models.graphbased.directed.bpmn.elements.Gateway;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.BpmnNodeFiringOption;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.MarkingBpmnNodeFiringOption;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
@@ -18,9 +19,9 @@ public class ExecutableBpmnExclusiveGatewayNode extends AbstractExecutableBpmnNo
     private final Collection<BpmnMarking> consumeOptions;
     private final Collection<BpmnNodeFiringOption> produceOptions;
 
-    public ExecutableBpmnExclusiveGatewayNode(BPMNDiagram model, BPMNNode node, BpmnMarkingUtils markingUtils,
+    public ExecutableBpmnExclusiveGatewayNode(BPMNDiagram model, Gateway gateway, BpmnMarkingUtils markingUtils,
                                               BpmnTokenFactory tokenFactory, BpmnMarkingFactory markingFactory) {
-        super(model, node, markingUtils);
+        super(model, gateway, markingUtils);
         consumeOptions = getModel().getInEdges(getNode()).stream().map(e ->
                 markingFactory.create(model, Collections.singleton(tokenFactory.create(e)))).collect(Collectors.toList());
         produceOptions = getModel().getOutEdges(getNode()).stream().map(e -> new MarkingBpmnNodeFiringOption(this,

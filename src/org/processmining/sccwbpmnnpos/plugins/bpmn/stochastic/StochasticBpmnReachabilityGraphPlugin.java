@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.plugins;
+package org.processmining.sccwbpmnnpos.plugins.bpmn.stochastic;
 
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.plugin.PluginContext;
@@ -6,10 +6,10 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
-import org.processmining.plugins.bpmn.Bpmn;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.statespace.Bpmn2MinimalReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.statespace.Bpmn2MinimalReachabilityGraphConverterImpl;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.model.statespace.BpmnUnboundedException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2PartiallyOrderedReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2ReachabilityGraphConverter;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.help.YourHelp;
@@ -22,16 +22,18 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.utils.Simple
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.CachedExecutableBpmnNodeFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.ExecutableBpmnNodeFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.SimpleExecutableBpmnNodeFactory;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactoryImpl;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.factory.DefaultMultisetFactory;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.factory.MultisetFactory;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.MultisetUtils;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.SimpleMultisetUtils;
-import org.processmining.stochasticbpmn.algorithms.diagram.builder.BpmnDiagramBuilder;
-import org.processmining.stochasticbpmn.algorithms.diagram.builder.BpmnDiagramBuilderImpl;
+import org.processmining.stochasticbpmn.algorithms.diagram.builder.StochasticBPMNDiagramBuilder;
+import org.processmining.stochasticbpmn.algorithms.diagram.builder.StochasticBPMNDiagramBuilderImpl;
+import org.processmining.stochasticbpmn.models.bpmn.stochastic.StochasticBpmn;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
 
 @Plugin(
-        name = "POEMS BPMN Reachability Graph",
+        name = "Stochastic BPMN Partially Ordered Reachability Graph",
         parameterLabels = {"Stochastic BPMN",},
         returnLabels = {"Transition System"},
         returnTypes = {TransitionSystem.class},
@@ -39,8 +41,8 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
         level = PluginLevel.Local
 )
 public class StochasticBpmnReachabilityGraphPlugin {
-    private final Bpmn2MinimalReachabilityGraphConverter bpmn2StochasticLanguageConverter;
-    private final BpmnDiagramBuilder diagramBuilder;
+    private final StochasticBpmn2ReachabilityGraphConverter converter;
+    private final StochasticBPMNDiagramBuilder diagramBuilder;
 
     public StochasticBpmnReachabilityGraphPlugin() {
         MultisetFactory multisetFactory = new DefaultMultisetFactory();
@@ -48,16 +50,19 @@ public class StochasticBpmnReachabilityGraphPlugin {
         BpmnTokenFactory tokenFactory = new SimpleBpmnTokenFactory();
         BpmnMarkingFactory markingFactory = new DefaultBpmnMarkingFactory(multisetFactory);
         BpmnMarkingUtils markingUtils = new SimpleBpmnMarkingUtils(multisetUtils, markingFactory);
-        ExecutableBpmnNodeFactory executableNodeFactory =
-                new CachedExecutableBpmnNodeFactory(new SimpleExecutableBpmnNodeFactory(tokenFactory,
-                        markingFactory, markingUtils));
+        SimpleExecutableBpmnNodeFactory simpleExecutableBpmnNodeFactory =
+                new SimpleExecutableBpmnNodeFactory(tokenFactory,
+                markingFactory, markingUtils);
+        ExecutableStochasticBpmnNodeFactoryImpl stochasticNodeFactory =
+                new ExecutableStochasticBpmnNodeFactoryImpl(simpleExecutableBpmnNodeFactory, tokenFactory,
+                        markingFactory, markingUtils);
+        ExecutableBpmnNodeFactory executableNodeFactory = new CachedExecutableBpmnNodeFactory(stochasticNodeFactory);
 
         CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
-        bpmn2StochasticLanguageConverter =
-                new Bpmn2MinimalReachabilityGraphConverterImpl(executableNodeFactory, markingFactory,
+        converter =
+                new StochasticBpmn2PartiallyOrderedReachabilityGraphConverter(executableNodeFactory, markingFactory,
                         cartesianProductCalculator);
-        diagramBuilder = new BpmnDiagramBuilderImpl();
-
+        diagramBuilder = new StochasticBPMNDiagramBuilderImpl();
     }
 
 
@@ -70,22 +75,23 @@ public class StochasticBpmnReachabilityGraphPlugin {
      */
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Stochastic BPMN Transition System", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, StochasticBPMNDiagram diagram) throws BpmnUnboundedException {
-        return bpmn2StochasticLanguageConverter.convert(diagram);
+    @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
+    public TransitionSystem run(PluginContext context, StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
+        return converter.convert(diagram);
     }
 
     /**
      * The plug-in variant that runs in any context and requires a parameters.
      *
      * @param context The context to run in.
-     * @param bpmn The first input is a bpmn model.
+     * @param bpmn    The first input is a stochastic bpmn model.
      * @return The output.
      */
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Stochastic BPMN Transition System", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, Bpmn bpmn) throws BpmnUnboundedException {
-        return bpmn2StochasticLanguageConverter.convert(diagramBuilder.build(bpmn));
+    @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
+    public TransitionSystem run(PluginContext context, StochasticBpmn bpmn) throws BpmnNoOptionToCompleteException,
+            BpmnUnboundedException {
+        return converter.convert(diagramBuilder.build(bpmn));
     }
 }
