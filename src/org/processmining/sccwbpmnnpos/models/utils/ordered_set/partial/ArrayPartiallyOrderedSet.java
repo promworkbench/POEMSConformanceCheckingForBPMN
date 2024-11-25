@@ -2,7 +2,6 @@ package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.partialorder.PartialOrderUtils;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.*;
@@ -83,7 +82,8 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
     private void setPredecessor(int elementIdx, int predecessorIdx) throws PartialOrderLoopNotAllowedException {
 //        if (elementIdx < predecessorIdx) {
 //            List<Integer> loopSequence = getLoopSequence(elementIdx, predecessorIdx);
-//            throw new PartialOrderLoopNotAllowedException(loopSequence.stream().map(this::getElement).collect(Collectors.toList()));
+//            throw new PartialOrderLoopNotAllowedException(loopSequence.stream().map(this::getElement).collect
+//            (Collectors.toList()));
 //        }
         predecessors.get(elementIdx).add(predecessorIdx);
     }

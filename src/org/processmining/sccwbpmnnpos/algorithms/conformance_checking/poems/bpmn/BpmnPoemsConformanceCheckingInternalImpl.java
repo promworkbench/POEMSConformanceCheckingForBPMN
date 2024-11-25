@@ -1,8 +1,10 @@
 package org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.bpmn;
 
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.PoemsConformanceChecking;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.SimplifiedLogToStochasticLanguageConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.StochasticBpmn2StochasticLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.language.StochasticBpmn2StochasticLanguageConverter;
 import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.trace.partial_order.PartiallyOrderedTrace;
 import org.processmining.sccwbpmnnpos.models.utils.trace.total_order.TotallyOrderedTrace;
@@ -23,7 +25,7 @@ public class BpmnPoemsConformanceCheckingInternalImpl implements BpmnPoemsConfor
     }
 
     @Override
-    public ConformanceCheckingResult calculateConformance(StochasticBPMNDiagram stochasticBPMNDiagram, SimplifiedEventLog simplifiedEventLogVariants) {
+    public ConformanceCheckingResult calculateConformance(StochasticBPMNDiagram stochasticBPMNDiagram, SimplifiedEventLog simplifiedEventLogVariants) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
         final StochasticLanguage<Activity, PartiallyOrderedTrace> sl1 = modelToStochasticLanguageConverter.convert(stochasticBPMNDiagram);
         final StochasticLanguage<Activity, TotallyOrderedTrace> sl2 = logToStochasticLanguageConverter.convert(simplifiedEventLogVariants);
         return poemsConformanceChecking.calculateConformance(sl1, sl2);

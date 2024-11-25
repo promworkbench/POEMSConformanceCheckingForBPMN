@@ -1,12 +1,13 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
+import flanagan.analysis.Stat;
 import org.processmining.models.graphbased.directed.DirectedGraphNode;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystemImpl;
-import org.processmining.petrinets.utils.DirectedGraphUtils;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
+import org.processmining.sccwbpmnnpos.algorithms.utils.directedGraph.DirectedGraphUtils;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.BpmnFiringChange;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagram;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagramImpl;
@@ -62,10 +63,10 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
                 for (BpmnStateChange nextState : nextMarkings) {
                     if (!transitionSystem.getStates().contains(nextState.getTargetMarking())) {
                         // Loop detected, don't process the same marking again
-                        Set<DirectedGraphNode> preSet = DirectedGraphUtils.getPreSet(transitionSystem,
+                        Set<State> preSet = DirectedGraphUtils.getAllPredecessors(transitionSystem,
                                 transitionSystem.getNode(marking));
                         Set<BpmnMarking> preMarkings =
-                                preSet.stream().map(s -> (BpmnMarking) ((State) s).getIdentifier()).collect(Collectors.toSet());
+                                preSet.stream().map(s -> (BpmnMarking) s.getIdentifier()).collect(Collectors.toSet());
                         preMarkings.add(marking);
                         for (BpmnMarking preMarking : preMarkings) {
                             if (nextState.getTargetMarking().contains(preMarking)) {
