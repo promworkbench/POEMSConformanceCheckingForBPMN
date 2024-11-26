@@ -66,6 +66,11 @@ public class ArrayTotallyOrderedSet<ELEMENT> implements TotallyOrderedSet<ELEMEN
     }
 
     @Override
+    public Collection<ELEMENT> getAscendants(ELEMENT element) {
+        int elementIdx = indexOf(element);
+        return elements.subList(0, elementIdx - 1);
+    }
+
     public Collection<ELEMENT> getPredecessors(ELEMENT element) {
         int elementIdx = indexOf(element);
         return Collections.singleton(get(elementIdx - 1));

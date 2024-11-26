@@ -4,7 +4,7 @@ import org.processmining.models.graphbased.directed.transitionsystem.TransitionS
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2ReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.models.stochastic_language.StochasticLanguage;
+import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguage;
 import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.trace.partial_order.PartiallyOrderedTrace;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;

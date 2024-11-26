@@ -80,11 +80,17 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
     }
 
     private void setPredecessor(int elementIdx, int predecessorIdx) throws PartialOrderLoopNotAllowedException {
-//        if (elementIdx < predecessorIdx) {
-//            List<Integer> loopSequence = getLoopSequence(elementIdx, predecessorIdx);
-//            throw new PartialOrderLoopNotAllowedException(loopSequence.stream().map(this::getElement).collect
-//            (Collectors.toList()));
-//        }
+        if (elementIdx < predecessorIdx) {
+            List<Integer> loopSequence = getLoopSequence(elementIdx, predecessorIdx);
+            if (Objects.nonNull(loopSequence)) {
+                throw new PartialOrderLoopNotAllowedException(loopSequence.stream().map(this::getElement).collect
+                        (Collectors.toList()));
+            } else {
+                throw new PartialOrderLoopNotAllowedException(Arrays.asList(getElement(elementIdx),
+                        getElement(predecessorIdx), getElement(elementIdx)));
+            }
+
+        }
         predecessors.get(elementIdx).add(predecessorIdx);
     }
 
@@ -129,26 +135,34 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
         return elementCollection.stream().map(elements::get).collect(Collectors.toSet());
     }
 
-    private Set<Integer> getPredecessors(int idx) {
+    private Set<Integer> getAscendants(int idx) {
         Set<Integer> predecessorsIdx = predecessors.get(idx);
         if (Objects.isNull(predecessorsIdx) || predecessorsIdx.isEmpty()) {
             return Collections.emptySet();
         }
         Set<Integer> result = new HashSet<>(predecessorsIdx);
         for (Integer predecessor : predecessorsIdx) {
-            result.addAll(getPredecessors(predecessor));
+            result.addAll(getAscendants(predecessor));
         }
         return result;
     }
 
     @Override
+    public Set<ELEMENT> getAscendants(ELEMENT element) {
+        Integer idx = getIndex(element);
+        if (Objects.isNull(idx)) {
+            return Collections.emptySet();
+        }
+        Set<Integer> predecessorsIdx = getAscendants(idx);
+        return toElements(predecessorsIdx);
+    }
+
     public Set<ELEMENT> getPredecessors(ELEMENT element) {
         Integer idx = getIndex(element);
         if (Objects.isNull(idx)) {
             return Collections.emptySet();
         }
-        Set<Integer> predecessorsIdx = getPredecessors(idx);
-        return toElements(predecessorsIdx);
+        return toElements(predecessors.get(idx));
     }
 
     @Override

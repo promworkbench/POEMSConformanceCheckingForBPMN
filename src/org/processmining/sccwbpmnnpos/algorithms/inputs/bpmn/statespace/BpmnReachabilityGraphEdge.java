@@ -1,17 +1,17 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnExecutionPath;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
 
 import java.util.Objects;
 
 public class BpmnReachabilityGraphEdge {
-    public BpmnExecutionPath getPath() {
+    public BpmnPartiallyOrderedPath getPath() {
         return path;
     }
 
-    private final BpmnExecutionPath path;
+    private final BpmnPartiallyOrderedPath path;
 
-    public BpmnReachabilityGraphEdge(BpmnExecutionPath path) {
+    public BpmnReachabilityGraphEdge(BpmnPartiallyOrderedPath path) {
         this.path = path;
     }
 

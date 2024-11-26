@@ -116,6 +116,15 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
     }
 
     @Override
+    public Set<ELEMENT> getAscendants(ELEMENT element) {
+        Set<ELEMENT> ascendants = map.get(element);
+        for (ELEMENT ascendant : ascendants) {
+            ascendants.addAll(getAscendants(ascendant));
+        }
+        return ascendants;
+    }
+
+    @Override
     public Set<ELEMENT> getPredecessors(ELEMENT element) {
         return map.get(element);
     }

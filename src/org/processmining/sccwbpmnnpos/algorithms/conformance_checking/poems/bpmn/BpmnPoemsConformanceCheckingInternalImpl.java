@@ -10,7 +10,7 @@ import org.processmining.sccwbpmnnpos.models.utils.trace.partial_order.Partially
 import org.processmining.sccwbpmnnpos.models.utils.trace.total_order.TotallyOrderedTrace;
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.ConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
-import org.processmining.sccwbpmnnpos.models.stochastic_language.StochasticLanguage;
+import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguage;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
 
 public class BpmnPoemsConformanceCheckingInternalImpl implements BpmnPoemsConformanceCheckingInternal {

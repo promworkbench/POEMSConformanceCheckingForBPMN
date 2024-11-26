@@ -1,5 +1,6 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
+import org.processmining.models.graphbased.directed.DirectedGraph;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.OrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
@@ -13,6 +14,8 @@ public interface PartiallyOrderedSet<ELEMENT> extends OrderedSet<ELEMENT>, Set<E
     void setPredecessors(ELEMENT element, Collection<ELEMENT> predecessors) throws PartialOrderLoopNotAllowedException;
 
     Set<ELEMENT> getAlphabet();
+
+    Set<ELEMENT> getAscendants(ELEMENT element);
 
     Set<ELEMENT> getPredecessors(ELEMENT element);
 

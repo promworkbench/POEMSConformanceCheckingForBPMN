@@ -1,17 +1,19 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace;
 
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnReachabilityGraphEdge;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnExecutionPath;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
+import org.processmining.stochasticbpmn.models.stochastic.Probability;
+import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
-public class StochasticBpmnReachabilityEdge extends BpmnReachabilityGraphEdge {
-    private final double probability;
+public class StochasticBpmnReachabilityEdge extends BpmnReachabilityGraphEdge implements StochasticObject {
+    private final Probability probability;
 
-    public StochasticBpmnReachabilityEdge(BpmnExecutionPath path, double probability) {
+    public StochasticBpmnReachabilityEdge(BpmnPartiallyOrderedPath path, Probability probability) {
         super(path);
         this.probability = probability;
     }
 
-    public double getProbability() {
+    public Probability getProbability() {
         return probability;
     }
 

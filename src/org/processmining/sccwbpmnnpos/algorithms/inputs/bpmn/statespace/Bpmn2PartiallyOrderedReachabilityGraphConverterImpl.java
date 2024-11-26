@@ -1,11 +1,9 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
-import flanagan.analysis.Stat;
-import org.processmining.models.graphbased.directed.DirectedGraphNode;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
+import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
+import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
-import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
-import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystemImpl;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.directedGraph.DirectedGraphUtils;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.BpmnFiringChange;
@@ -18,10 +16,11 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.BpmnTo
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.ExecutableBpmnNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.exceptions.BpmnNodeNotEnabledException;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.ExecutableBpmnNodeFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnExecutionPath;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.PartiallyOrderedBpmnExecutionPath;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.firing_event.BpmnFiringEvent;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.firing_event.BpmnUnavoidableLiveLockDetected;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPathImpl;
+import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
+import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet;
+import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.NonRepetitiveEventBasedPartiallyOrderedSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,30 +40,30 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
 
 
     @Override
-    public TransitionSystem convert(BPMNDiagram bpmnDiagram) throws BpmnNoOptionToCompleteException,
+    public ReachabilityGraph convert(BPMNDiagram bpmnDiagram) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
         ExecutableBpmnDiagramImpl executableDiagram = new ExecutableBpmnDiagramImpl(bpmnDiagram, nodeFactory);
-        TransitionSystem transitionSystem = new TransitionSystemImpl(bpmnDiagram.getLabel());
+        ReachabilityGraph reachabilityGraph = new ReachabilityGraph(bpmnDiagram.getLabel());
 
         BpmnStateChange initialMarking = getInitialMarking(executableDiagram);
-        transitionSystem.addState(initialMarking.getTargetMarking());
+        reachabilityGraph.addState(initialMarking.getTargetMarking());
         BpmnMarking marking2 = executeUntilThereAreOnlyChoices(executableDiagram,
                 initialMarking.getTargetMarking(), initialMarking.getEdge().getPath());
-        transitionSystem.addState(marking2);
-        transitionSystem.addTransition(initialMarking.getTargetMarking(), marking2, initialMarking.getEdge());
+        reachabilityGraph.addState(marking2);
+        reachabilityGraph.addTransition(initialMarking.getTargetMarking(), marking2, initialMarking.getEdge());
 
         Set<BpmnMarking> markings = new HashSet<>();
         markings.add(marking2);
         do {
             Set<BpmnMarking> tmp = new HashSet<>();
             for (BpmnMarking marking : markings) {
-                transitionSystem.addState(marking);
+                reachabilityGraph.addState(marking);
                 Set<BpmnStateChange> nextMarkings = executeNextBatch(executableDiagram, marking);
                 for (BpmnStateChange nextState : nextMarkings) {
-                    if (!transitionSystem.getStates().contains(nextState.getTargetMarking())) {
+                    if (!reachabilityGraph.getStates().contains(nextState.getTargetMarking())) {
                         // Loop detected, don't process the same marking again
-                        Set<State> preSet = DirectedGraphUtils.getAllPredecessors(transitionSystem,
-                                transitionSystem.getNode(marking));
+                        Set<State> preSet = DirectedGraphUtils.getAllPredecessors(reachabilityGraph,
+                                reachabilityGraph.getNode(marking));
                         Set<BpmnMarking> preMarkings =
                                 preSet.stream().map(s -> (BpmnMarking) s.getIdentifier()).collect(Collectors.toSet());
                         preMarkings.add(marking);
@@ -76,19 +75,19 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
                         if (!nextState.getTargetMarking().isEmpty() && nextState.isComplete()) {
                             tmp.add(nextState.getTargetMarking());
                         }
-                        transitionSystem.addState(nextState.getTargetMarking());
+                        reachabilityGraph.addState(nextState.getTargetMarking());
                     }
-                    transitionSystem.addTransition(marking, nextState.getTargetMarking(), nextState.getEdge());
+                    reachabilityGraph.addTransition(marking, nextState.getTargetMarking(), nextState.getEdge());
                 }
             }
             markings = tmp;
         } while (!markings.isEmpty());
 
-        return transitionSystem;
+        return reachabilityGraph;
     }
 
     private Set<BpmnStateChange> executeNextBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) throws BpmnNoOptionToCompleteException {
-        final BpmnExecutionPath path = new PartiallyOrderedBpmnExecutionPath();
+        final BpmnPartiallyOrderedPath path = newPath();
         BpmnMarking resultMarking = executeUntilThereAreOnlyChoices(diagram, marking, path);
         if (!Objects.equals(resultMarking, marking)) {
             return Collections.singleton(new BpmnStateChange(resultMarking, getEdge(Collections.emptyList(), path)));
@@ -119,7 +118,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
     }
 
     private BpmnMarking executeUntilThereAreOnlyChoices(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking,
-                                                        BpmnExecutionPath path) throws BpmnNoOptionToCompleteException {
+                                                        BpmnPartiallyOrderedPath path) throws BpmnNoOptionToCompleteException {
         Collection<ExecutableBpmnNode> nodes = diagram.getEnabledNodes(marking);
         if (nodes.isEmpty()) {
             return marking;
@@ -143,7 +142,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
         Collection<ExecutableBpmnNode> nodes = diagram.getEnabledNodes(marking);
         if (nodes.isEmpty()) {
             return Collections.singleton(new BpmnStateChange(marking,
-                    getEdge(Collections.emptyList(), new PartiallyOrderedBpmnExecutionPath())));
+                    getEdge(Collections.emptyList(), newPath())));
         }
         List<Collection<BpmnNodeFiringOption>> options = new LinkedList<>();
         for (ExecutableBpmnNode node : nodes) {
@@ -155,7 +154,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
         List<List<BpmnNodeFiringOption>> cartesianProduct = cartesianProductCalculator.calculate(options);
         Set<BpmnStateChange> result = new HashSet<>();
         for (List<BpmnNodeFiringOption> combination : cartesianProduct) {
-            BpmnExecutionPath path = new PartiallyOrderedBpmnExecutionPath();
+            BpmnPartiallyOrderedPath path = newPath();
             BpmnMarking currentMarking = markingFactory.create(marking.getModel(), marking);
             BpmnMarking resultMarking;
             try {
@@ -173,7 +172,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
     }
 
     private BpmnMarking executeNextNonChoice(Collection<ExecutableBpmnNode> nodes, BpmnMarking marking,
-                                             BpmnExecutionPath path) throws BpmnNodeNotEnabledException,
+                                             BpmnPartiallyOrderedPath path) throws BpmnNodeNotEnabledException,
             BpmnNoOptionToCompleteException {
         Collection<BpmnNodeFiringOption> firingOptions = new LinkedList<>();
         for (ExecutableBpmnNode node : nodes) {
@@ -189,7 +188,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
 
     private BpmnStateChange getInitialMarking(ExecutableBpmnDiagram diagram) throws BpmnNoOptionToCompleteException {
         Collection<ExecutableBpmnNode> nodes = diagram.getStartNodes();
-        BpmnExecutionPath path = new PartiallyOrderedBpmnExecutionPath();
+        BpmnPartiallyOrderedPath path = newPath();
         List<BpmnNodeFiringOption> options =
                 nodes.stream().flatMap(n -> n.getFiringOptions().stream()).collect(Collectors.toList());
         BpmnMarking initialMarking = null;
@@ -203,24 +202,24 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
     }
 
     private BpmnMarking executeOnce(Collection<BpmnNodeFiringOption> firingOptions, BpmnMarking marking,
-                                    BpmnExecutionPath path) throws BpmnNodeNotEnabledException,
+                                    BpmnPartiallyOrderedPath path) throws BpmnNodeNotEnabledException,
             BpmnNoOptionToCompleteException {
         BpmnMarking resultMarking = marking;
         for (BpmnNodeFiringOption firingOption : firingOptions) {
             BpmnFiringChange bpmnFiringChange = firingOption.getNode().fireOne(resultMarking, firingOption);
             resultMarking = bpmnFiringChange.getResultMarking();
-            int sinkNodeFiringIndex = path.fire(firingOption.getNode().getNode());
-            BpmnFiringEvent sinkEvent = path.getFiringEvent(firingOption.getNode().getNode(), sinkNodeFiringIndex);
+            EventBasedPartiallyOrderedSet.Event<BPMNNode> sinkEvent = path.fire(firingOption.getNode().getNode());
             for (BpmnToken token : bpmnFiringChange.getConsumedMarking()) {
                 int sourceNodeFiringIndex = path.getTimesFired(token.getSourceNode());
                 if (sourceNodeFiringIndex == 0) {
                     continue;
                 }
-                BpmnFiringEvent sourceEvent = path.getFiringEvent(token.getSourceNode(),
+                EventBasedPartiallyOrderedSet.Event<BPMNNode> sourceEvent =
+                        path.getFiringEvent(token.getSourceNode(),
                         sourceNodeFiringIndex - resultMarking.count(token));
                 try {
                     path.connect(sourceEvent, sinkEvent);
-                } catch (BpmnUnavoidableLiveLockDetected e) {
+                } catch (PartialOrderLoopNotAllowedException e) {
                     throw new BpmnNoOptionToCompleteException(bpmnFiringChange.getOriginalMarking(),
                             bpmnFiringChange.getResultMarking(), path, e);
                 }
@@ -230,7 +229,11 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImpl implements Bpmn
     }
 
     protected BpmnReachabilityGraphEdge getEdge(final Collection<BpmnNodeFiringOption> firingOptions,
-                                                      BpmnExecutionPath path) {
+                                                BpmnPartiallyOrderedPath path) {
         return new BpmnReachabilityGraphEdge(path);
+    }
+
+    private BpmnPartiallyOrderedPath newPath() {
+        return new BpmnPartiallyOrderedPathImpl(new NonRepetitiveEventBasedPartiallyOrderedSet<>());
     }
 }
