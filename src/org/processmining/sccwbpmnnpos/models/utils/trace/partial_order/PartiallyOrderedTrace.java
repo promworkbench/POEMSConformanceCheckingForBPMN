@@ -5,5 +5,5 @@ import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.Partially
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.trace.Trace;
 
-public interface PartiallyOrderedTrace extends EventBasedPartiallyOrderedSet<Activity>, Trace {
+public interface PartiallyOrderedTrace<A extends Activity> extends EventBasedPartiallyOrderedSet<A>, Trace<A> {
 }

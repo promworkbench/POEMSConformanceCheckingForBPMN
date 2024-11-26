@@ -5,12 +5,10 @@ import java.util.Objects;
 public class ActivityImpl implements Activity {
     private final String label;
     private final Integer id;
-    private final ActivityRegistry registry;
 
-    public ActivityImpl(String label, ActivityRegistry activityRegistry) {
+    public ActivityImpl(int id, String label) {
         this.label = label;
-        this.registry = activityRegistry;
-        this.id = activityRegistry.register(this);
+        this.id = id;
     }
 
     @Override
@@ -24,16 +22,6 @@ public class ActivityImpl implements Activity {
     }
 
     @Override
-    public ActivityRegistry getRegistry() {
-        return registry;
-    }
-
-    @Override
-    public String toString() {
-        return this.label;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ActivityImpl)) return false;
@@ -44,5 +32,10 @@ public class ActivityImpl implements Activity {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    @Override
+    public String toString() {
+        return getLabel();
     }
 }

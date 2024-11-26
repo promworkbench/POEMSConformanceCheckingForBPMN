@@ -7,5 +7,5 @@ import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.Conformance
 import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguage;
 
 public interface PoemsConformanceChecking {
-    ConformanceCheckingResult calculateConformance(final StochasticLanguage<Activity, PartiallyOrderedTrace> poStochasticLanguage, final StochasticLanguage<Activity, TotallyOrderedTrace> stochasticLanguage);
+    ConformanceCheckingResult calculateConformance(final StochasticLanguage<Activity, ? extends PartiallyOrderedTrace<Activity>> poStochasticLanguage, final StochasticLanguage<Activity, ? extends TotallyOrderedTrace<Activity>> stochasticLanguage);
 }

@@ -175,6 +175,23 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
 
     @Override
     public Iterator<ELEMENT> iterator() {
-        return getAlphabet().iterator();
+        return new Iterator<ELEMENT>() {
+            final Set<ELEMENT> executed = new HashSet<>();
+            final Queue<ELEMENT> toExecute = new LinkedList<>();
+            @Override
+            public boolean hasNext() {
+                return executed.size() < size();
+            }
+
+            @Override
+            public ELEMENT next() {
+                if(toExecute.isEmpty()) {
+                    toExecute.addAll(getEnabled(executed));
+                }
+                ELEMENT nextElement = toExecute.poll();
+                executed.add(nextElement);
+                return nextElement;
+            }
+        };
     }
 }

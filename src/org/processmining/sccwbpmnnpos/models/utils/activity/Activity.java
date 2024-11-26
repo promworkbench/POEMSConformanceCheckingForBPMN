@@ -4,6 +4,4 @@ public interface Activity {
     String getLabel();
 
     Integer getId();
-
-    ActivityRegistry getRegistry();
 }

@@ -12,15 +12,16 @@ import org.processmining.sccwbpmnnpos.models.log.impl.basic.MSetSimplifiedEventL
 import org.processmining.sccwbpmnnpos.models.log.impl.basic.SimplifiedEventLogTraceImpl;
 import org.processmining.sccwbpmnnpos.models.utils.activity.ActivityImpl;
 import org.processmining.sccwbpmnnpos.models.utils.activity.ActivityRegistry;
+import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 
 import java.util.Objects;
 
 public class BasicXLogSimplifier implements XLogSimplifier {
     private final XEventClassifier defaultClassifier;
-    private final ActivityRegistry activityRegistry;
+    private final ActivityFactory activityFactory;
 
-    public BasicXLogSimplifier(XEventClassifier defaultClassifier, ActivityRegistry activityRegistry) {
-        this.activityRegistry = activityRegistry;
+    public BasicXLogSimplifier(XEventClassifier defaultClassifier, ActivityFactory activityFactory) {
+        this.activityFactory = activityFactory;
         this.defaultClassifier = new XEventNameClassifier();
     }
 
@@ -36,7 +37,7 @@ public class BasicXLogSimplifier implements XLogSimplifier {
             int i = 0;
             for (XEvent event : trace) {
                 final String activityLabel = classifier.getClassIdentity(event);
-                simplifiedTrace.add(new ActivityImpl(activityLabel, activityRegistry));
+                simplifiedTrace.add(activityFactory.create(activityLabel));
             }
             simpleEventLog.add(simplifiedTrace, 1);
         }

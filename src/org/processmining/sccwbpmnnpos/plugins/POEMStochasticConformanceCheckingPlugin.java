@@ -1,7 +1,5 @@
 package org.processmining.sccwbpmnnpos.plugins;
 
-import java.util.Collection;
-
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
@@ -24,9 +22,11 @@ import org.processmining.sccwbpmnnpos.models.YourOutput;
 import org.processmining.sccwbpmnnpos.models.YourSecondInput;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLogVariant;
-import org.processmining.sccwbpmnnpos.models.utils.activity.SimpleActivityRegistry;
+import org.processmining.sccwbpmnnpos.models.utils.activity.factory.CachedActivityFactory;
 import org.processmining.sccwbpmnnpos.parameters.YourParameters;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
+
+import java.util.Collection;
 
 @Plugin(
         name = "BPMN POEMS Conformance Checking",
@@ -41,17 +41,20 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
     /**
      * The plug-in variant that runs in any context and requires a parameters.
      *
-     * @param context    The context to run in.
-     * @param sBpmnDiagram     The first input is a stochastic BPMN.
-     * @param log     The second input.
-     * @param parameters The parameters to use.
+     * @param context      The context to run in.
+     * @param sBpmnDiagram The first input is a stochastic BPMN.
+     * @param log          The second input.
+     * @param parameters   The parameters to use.
      * @return The output.
      */
-    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar.kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", requiredParameterLabels = {0, 1, 2}, help = "")
-    public POEMSCCResults run(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log, YourParameters parameters) {
+    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
+            ".kuzmanoski@rwth-aachen.de")
+    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
+            requiredParameterLabels = {0, 1, 2}, help = "")
+    public POEMSCCResults run(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log,
+                              YourParameters parameters) {
         // Apply the algorithm depending on whether a connection already exists.
-        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new SimpleActivityRegistry());
+        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new CachedActivityFactory());
         SimplifiedEventLog simpleLog = simplifier.simplify(log);
         System.out.println(simpleLog.getTotalTraces());
         for (SimplifiedEventLogVariant variant : simpleLog) {
@@ -64,16 +67,18 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
     /**
      * The plug-in variant that runs in any context and uses the default parameters.
      *
-     * @param context The context to run in.
-     * @param sBpmnDiagram  The first input.
-     * @param log  The second input.
+     * @param context      The context to run in.
+     * @param sBpmnDiagram The first input.
+     * @param log          The second input.
      * @return The output.
      */
-    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "Yaleksandar.kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths", requiredParameterLabels = {0, 1})
+    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "Yaleksandar" +
+            ".kuzmanoski@rwth-aachen.de")
+    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
+            requiredParameterLabels = {0, 1})
     public YourOutput runDefault(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log) {
         // Apply the algorithm depending on whether a connection already exists.
-        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new SimpleActivityRegistry());
+        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new CachedActivityFactory());
         SimplifiedEventLog simpleLog = simplifier.simplify(log);
         System.out.println(simpleLog.getTotalTraces());
         for (SimplifiedEventLogVariant variant : simpleLog) {
@@ -144,7 +149,8 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      * @param input2  The second input.
      * @return The output.
      */
-    private YourOutput runConnections(PluginContext context, YourFirstInput input1, YourSecondInput input2, YourParameters parameters) {
+    private YourOutput runConnections(PluginContext context, YourFirstInput input1, YourSecondInput input2,
+                                      YourParameters parameters) {
         if (parameters.isTryConnections()) {
             // Try to find a connection that matches the inputs and the parameters.
             Collection<YourConnection> connections;
