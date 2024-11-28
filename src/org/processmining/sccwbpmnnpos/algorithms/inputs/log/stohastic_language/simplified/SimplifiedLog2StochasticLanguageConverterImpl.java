@@ -18,8 +18,8 @@ public class SimplifiedLog2StochasticLanguageConverterImpl implements Simplified
 
         for (SimplifiedEventLogVariant variant : eventLog) {
             stochasticLanguage.add(variant.getTrace(),
-                    Probability.of(BigDecimal.valueOf(variant.getCardinality()).divide(BigDecimal.valueOf(logSize),
-                            30, RoundingMode.DOWN).stripTrailingZeros()));
+                    Probability.of((BigDecimal.valueOf(variant.getCardinality()).divide(BigDecimal.valueOf(logSize),
+                            30, RoundingMode.DOWN)).stripTrailingZeros()));
         }
         return stochasticLanguage;
     }

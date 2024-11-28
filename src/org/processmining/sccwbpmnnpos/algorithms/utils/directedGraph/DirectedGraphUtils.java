@@ -4,7 +4,6 @@ import org.processmining.models.graphbased.directed.DirectedGraph;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
 import org.processmining.models.graphbased.directed.DirectedGraphNode;
 
-import javax.xml.soap.Node;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +15,7 @@ public class DirectedGraphUtils {
         return graph.getNodes().stream().filter(n -> graph.getOutEdges(n).isEmpty()).collect(Collectors.toSet());
     }
 
-    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAllPredecessors(final DirectedGraph<N, E> graph, final Set<N> startNodes) {
+    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAscendants(final DirectedGraph<N, E> graph, final Set<N> startNodes) {
         final Set<N> visited = new HashSet<>();
         final Stack<N> toVisit = new Stack<>();
         for (N reach : startNodes) {
@@ -36,16 +35,20 @@ public class DirectedGraphUtils {
                 }
             }
         } while (!toVisit.isEmpty());
+        visited.removeAll(startNodes);
         return visited;
     }
 
-    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAllNonPredecessors(final DirectedGraph<N, E> graph, final Set<N> startNodes) {
+    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAllNonAscendants(final DirectedGraph<N, E> graph, final Set<N> startNodes) {
         Set<N> allNodes = graph.getNodes();
-        allNodes.removeAll(getAllPredecessors(graph, startNodes));
+        allNodes.removeAll(getAscendants(graph, startNodes));
+        allNodes.removeAll(startNodes);
         return allNodes;
     }
 
-    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAllPredecessors(final DirectedGraph<N, E> graph, final N node) {
+
+
+    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAscendants(final DirectedGraph<N, E> graph, final N node) {
         final Set<N> visited = new HashSet<>();
         final Stack<N> toVisit = new Stack<>();
         toVisit.push(node);
@@ -66,7 +69,7 @@ public class DirectedGraphUtils {
         return visited;
     }
 
-    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getAllDescendants(final DirectedGraph<N, E> graph, final N node) {
+    public static <N extends DirectedGraphNode, E extends DirectedGraphEdge<N, N>> Set<N> getDescendants(final DirectedGraph<N, E> graph, final N node) {
         final Set<N> visited = new HashSet<>();
         final Stack<N> toVisit = new Stack<>();
         toVisit.push(node);

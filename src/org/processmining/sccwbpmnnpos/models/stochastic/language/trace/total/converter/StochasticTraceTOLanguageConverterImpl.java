@@ -28,7 +28,7 @@ public class StochasticTraceTOLanguageConverterImpl<A extends Activity, T extend
         int i = 0;
         for (StochasticLanguageEntry<A, T> entry : traceLanguage) {
             traces.add(traceConverter.toEMSC24(entry.getElement(), activity2IndexKey));
-            probabilities[i] = entry.getProbability().doubleValue();
+            probabilities[i++] = entry.getProbability().doubleValue();
         }
         return new EMSC24StochasticLanguageAdapter<>(activity2IndexKey, traces, probabilities);
     }

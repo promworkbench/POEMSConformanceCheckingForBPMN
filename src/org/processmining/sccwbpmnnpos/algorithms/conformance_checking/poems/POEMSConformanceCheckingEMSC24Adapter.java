@@ -46,11 +46,9 @@ public class POEMSConformanceCheckingEMSC24Adapter implements POEMSConformanceCh
         StochasticLanguage<TotalOrder> logLanguage = toLanguageConverter.toEMSC24(stochasticLanguage,
                 activity2IndexKey);
 
-        String gvString = PartialOrderUtils.toGraphVizString(modelLanguage.getTrace(1));
         EMSCParametersLogTotalModelPartialCertainDefault parameters = new EMSCParametersLogTotalModelPartialCertainDefault();
         Pair<Double, Double> result = compute(parameters,
                 logLanguage, modelLanguage, () -> false);
-        System.out.println(result);
 
         return new BpmnPoemsPOEMSConformanceCheckingResult(result.getA(), result.getB());
     }

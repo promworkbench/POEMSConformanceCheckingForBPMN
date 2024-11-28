@@ -1,6 +1,5 @@
-package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics;
+package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 

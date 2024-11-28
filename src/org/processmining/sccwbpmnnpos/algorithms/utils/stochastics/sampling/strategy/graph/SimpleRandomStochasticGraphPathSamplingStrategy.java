@@ -1,7 +1,7 @@
-package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph;
+package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph;
 
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.Sampler;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.StochasticGraphPathSamplingStrategy.PathOption;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.Sampler;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.PathOption;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
@@ -11,8 +11,8 @@ public class SimpleRandomStochasticGraphPathSamplingStrategy<T extends PathOptio
         extends StochasticObject>> implements StochasticGraphPathSamplingStrategy<T> {
     @Override
     public Sampler<T> getSampler() {
-        final Map<StochasticObject, List<T>> pathOptions = new HashMap<>();
         return new Sampler<T>() {
+            final Map<StochasticObject, List<T>> pathOptions = new HashMap<>();
             @Override
             public void add(T spPathOption) {
                 List<T> list = pathOptions.computeIfAbsent(spPathOption.getState(), k -> new LinkedList<>());

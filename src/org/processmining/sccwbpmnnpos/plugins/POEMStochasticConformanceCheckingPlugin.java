@@ -7,9 +7,12 @@ import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.plugin.PluginContext;
+import org.processmining.framework.plugin.PluginContextID;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
+import org.processmining.framework.plugin.events.Logger;
+import org.processmining.framework.plugin.events.ProgressEventListener;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.YourAlgorithm;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
@@ -40,7 +43,7 @@ import java.util.Collection;
         name = "BPMN POEMS Conformance Checking",
         parameterLabels = {"Stochastic BPMN", "Event Log", "Model Probability Mass"},
         returnLabels = {"Model-Log Conformance measure"},
-        returnTypes = {POEMSCCResults.class},
+        returnTypes = {POEMSConformanceCheckingResult.class},
         help = YourHelp.TEXT,
         level = PluginLevel.Local
 )
@@ -80,7 +83,7 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      * @param log          The second input.
      * @return The output.
      */
-    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "Yaleksandar" +
+    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
             requiredParameterLabels = {0, 1})

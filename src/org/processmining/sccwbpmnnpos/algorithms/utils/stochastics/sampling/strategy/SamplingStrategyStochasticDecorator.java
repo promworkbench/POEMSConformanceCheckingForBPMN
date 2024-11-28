@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics;
+package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy;
 
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 

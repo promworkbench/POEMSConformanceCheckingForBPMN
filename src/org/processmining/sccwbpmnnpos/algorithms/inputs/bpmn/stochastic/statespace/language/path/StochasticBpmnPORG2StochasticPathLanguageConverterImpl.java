@@ -7,9 +7,10 @@ import org.processmining.models.graphbased.directed.transitionsystem.Reachabilit
 import org.processmining.models.graphbased.directed.transitionsystem.State;
 import org.processmining.models.graphbased.directed.transitionsystem.Transition;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmnReachabilityEdge;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.reachabilitygraph.ReachabilityGraphUtils;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.Sampler;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.StochasticGraphPathSamplingStrategy;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.ReachabilityGraphUtils;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.Sampler;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.BpmnToken;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.ExecutableBpmnNode;
@@ -29,10 +30,12 @@ import java.util.Objects;
 public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements StochasticBpmnPORG2StochasticPathLanguageConverter {
     private final StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy;
     private final ExecutableStochasticBpmnNodeFactory executableNodeFactory;
+    private final StochasticLanguageGeneratorStopper stopper;
 
-    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, ExecutableStochasticBpmnNodeFactory executableNodeFactory) {
+    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, StochasticLanguageGeneratorStopper stopper, ExecutableStochasticBpmnNodeFactory executableNodeFactory) {
         this.samplingStrategy = samplingStrategy;
         this.executableNodeFactory = executableNodeFactory;
+        this.stopper = stopper;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements S
             BpmnMarking marking = (BpmnMarking) intermediatePathOption.getNextState().getIdentifier();
             if (marking.isFinal()) {
                 stochasticLanguage.add(newPath, intermediatePathOption.getProbability());
-                if (stochasticLanguage.size() >= 1000) {
+                if (stopper.shouldStop(stochasticLanguage)) {
                     break;
                 }
             } else {

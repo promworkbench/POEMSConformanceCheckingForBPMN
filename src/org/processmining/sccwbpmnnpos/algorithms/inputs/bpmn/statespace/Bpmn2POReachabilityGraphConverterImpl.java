@@ -4,7 +4,6 @@ import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverterImpl;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.directedGraph.DirectedGraphUtils;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.BpmnFiringChange;
@@ -46,7 +45,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
     @Override
     public ReachabilityGraph convert(BPMNDiagram bpmnDiagram) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
-        LOGGER.error("Constructing Reachability Graph for BPMN");
+        LOGGER.debug("Constructing Reachability Graph for BPMN");
         ExecutableBpmnDiagramImpl executableDiagram = new ExecutableBpmnDiagramImpl(bpmnDiagram, nodeFactory);
         ReachabilityGraph reachabilityGraph = new ReachabilityGraph(bpmnDiagram.getLabel());
 
@@ -67,7 +66,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 for (BpmnStateChange nextState : nextMarkings) {
                     if (!reachabilityGraph.getStates().contains(nextState.getTargetMarking())) {
                         // Loop detected, don't process the same marking again
-                        Set<State> preSet = DirectedGraphUtils.getAllPredecessors(reachabilityGraph,
+                        Set<State> preSet = DirectedGraphUtils.getAscendants(reachabilityGraph,
                                 reachabilityGraph.getNode(marking));
                         Set<BpmnMarking> preMarkings =
                                 preSet.stream().map(s -> (BpmnMarking) s.getIdentifier()).collect(Collectors.toSet());
@@ -88,7 +87,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             markings = tmp;
         } while (!markings.isEmpty());
 
-        LOGGER.error("Reachability Graph for BPMN Constructed");
+        LOGGER.debug("Reachability Graph for BPMN Constructed");
         return reachabilityGraph;
     }
 
