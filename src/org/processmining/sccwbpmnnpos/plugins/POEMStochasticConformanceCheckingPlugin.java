@@ -11,8 +11,12 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.YourAlgorithm;
+import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimplifier;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.impl.BasicXLogSimplifier;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
 import org.processmining.sccwbpmnnpos.connections.YourConnection;
 import org.processmining.sccwbpmnnpos.dialogs.YourDialog;
 import org.processmining.sccwbpmnnpos.help.YourHelp;
@@ -20,8 +24,12 @@ import org.processmining.sccwbpmnnpos.models.POEMSCCResults;
 import org.processmining.sccwbpmnnpos.models.YourFirstInput;
 import org.processmining.sccwbpmnnpos.models.YourOutput;
 import org.processmining.sccwbpmnnpos.models.YourSecondInput;
+import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLogVariant;
+import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.CachedActivityFactory;
 import org.processmining.sccwbpmnnpos.parameters.YourParameters;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
@@ -76,16 +84,13 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
             requiredParameterLabels = {0, 1})
-    public YourOutput runDefault(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log) {
-        // Apply the algorithm depending on whether a connection already exists.
-        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new CachedActivityFactory());
-        SimplifiedEventLog simpleLog = simplifier.simplify(log);
-        System.out.println(simpleLog.getTotalTraces());
-        for (SimplifiedEventLogVariant variant : simpleLog) {
-            System.out.println(variant);
-            break;
-        }
-        return null;
+    public POEMSConformanceCheckingResult runDefault(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException {
+        ActivityFactory activityFactory = ActivityFactory.getInstance();
+        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory);
+        EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
+        BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(sBpmnDiagram);
+        POEMSConformanceCheckingEMSC24Adapter emscSolver = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+        return emscSolver.calculateConformance(modelLanguage, logLanguage);
     }
 
     /**

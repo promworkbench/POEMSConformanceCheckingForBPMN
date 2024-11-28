@@ -16,4 +16,6 @@ public interface OrderedSet<ELEMENT> extends Collection<ELEMENT> {
     int size();
 
     String toString();
+
+    int getNumberOfConnections();
 }

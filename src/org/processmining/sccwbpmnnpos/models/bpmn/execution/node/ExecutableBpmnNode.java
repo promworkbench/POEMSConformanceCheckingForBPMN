@@ -51,4 +51,8 @@ public interface ExecutableBpmnNode {
     }
 
     String toString();
+
+    int getProducesTokensCount();
+
+    int getConsumesTokensCount();
 }

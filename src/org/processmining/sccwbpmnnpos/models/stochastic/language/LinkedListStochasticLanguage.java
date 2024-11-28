@@ -20,13 +20,18 @@ public class LinkedListStochasticLanguage<L, E extends Collection<L>> implements
         return list.stream().flatMap(entry -> entry.getElement().stream()).collect(Collectors.toSet());
     }
 
+    @Override
+    public int getSize() {
+        return list.size();
+    }
+
     public int size() {
         return list.size();
     }
 
     public void add(E element, Probability probability) {
         list.add(new StochasticLanguageEntry<L, E>(element, probability));
-        totalProbabilityMass = totalProbabilityMass.multiply(probability);
+        totalProbabilityMass = totalProbabilityMass.add(probability);
     }
 
     @Override

@@ -11,7 +11,7 @@ public interface SimplifiedEventLog extends Iterable<SimplifiedEventLogVariant> 
 
     int size();
 
-    Collection<SimplifiedEventLogTrace> getTraces();
+    Collection<EventLogTrace> getTraces();
 
     Integer getTotalTraces();
 }

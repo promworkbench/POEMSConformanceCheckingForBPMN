@@ -48,4 +48,14 @@ public class ExecutableBpmnStochasticExclusiveGatewayNode extends AbstractExecut
     public Collection<BpmnNodeFiringOption> getFiringOptions() {
         return new ArrayList<>(produceOptions);
     }
+
+    @Override
+    public int getProducesTokensCount() {
+        return 1;
+    }
+
+    @Override
+    public int getConsumesTokensCount() {
+        return 1;
+    }
 }

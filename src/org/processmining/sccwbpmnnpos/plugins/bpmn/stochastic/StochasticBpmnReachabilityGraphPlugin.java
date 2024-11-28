@@ -8,8 +8,8 @@ import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2PartiallyOrderedReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2ReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverterImpl;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.help.YourHelp;
@@ -41,27 +41,11 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
         level = PluginLevel.Local
 )
 public class StochasticBpmnReachabilityGraphPlugin {
-    private final StochasticBpmn2ReachabilityGraphConverter converter;
+    private final StochasticBpmn2POReachabilityGraphConverter converter;
     private final StochasticBPMNDiagramBuilder diagramBuilder;
 
     public StochasticBpmnReachabilityGraphPlugin() {
-        MultisetFactory multisetFactory = new DefaultMultisetFactory();
-        MultisetUtils multisetUtils = new SimpleMultisetUtils(multisetFactory);
-        BpmnTokenFactory tokenFactory = new SimpleBpmnTokenFactory();
-        BpmnMarkingFactory markingFactory = new DefaultBpmnMarkingFactory(multisetFactory);
-        BpmnMarkingUtils markingUtils = new SimpleBpmnMarkingUtils(multisetUtils, markingFactory);
-        SimpleExecutableBpmnNodeFactory simpleExecutableBpmnNodeFactory =
-                new SimpleExecutableBpmnNodeFactory(tokenFactory,
-                markingFactory, markingUtils);
-        ExecutableStochasticBpmnNodeFactoryImpl stochasticNodeFactory =
-                new ExecutableStochasticBpmnNodeFactoryImpl(simpleExecutableBpmnNodeFactory, tokenFactory,
-                        markingFactory, markingUtils);
-        ExecutableBpmnNodeFactory executableNodeFactory = new CachedExecutableBpmnNodeFactory(stochasticNodeFactory);
-
-        CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
-        converter =
-                new StochasticBpmn2PartiallyOrderedReachabilityGraphConverter(executableNodeFactory, markingFactory,
-                        cartesianProductCalculator);
+        converter = StochasticBpmn2POReachabilityGraphConverter.getInstance();;
         diagramBuilder = new StochasticBPMNDiagramBuilderImpl();
     }
 

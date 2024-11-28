@@ -178,4 +178,9 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
             }
         }
     }
+
+    @Override
+    public int getNumberOfConnections() {
+        return po.getNumberOfConnections();
+    }
 }

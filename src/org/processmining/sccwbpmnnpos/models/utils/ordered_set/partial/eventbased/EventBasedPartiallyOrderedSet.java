@@ -28,6 +28,8 @@ public interface EventBasedPartiallyOrderedSet<I> extends Collection<I> {
 
     void concatenate(EventBasedPartiallyOrderedSet<I> other) throws PartialOrderLoopNotAllowedException;
 
+    int getNumberOfConnections();
+
     public class Event<I> {
         private final I item;
         private final int firingIndex;
@@ -60,7 +62,9 @@ public interface EventBasedPartiallyOrderedSet<I> extends Collection<I> {
 
         @Override
         public String toString() {
-            return getItem() + "." + getFiringIndex();
+            String s = String.valueOf(getItem().hashCode());
+            String elementIdx = s.substring(Math.max(0, s.length() - 3));
+            return elementIdx + " " + getItem().toString() + "." + getFiringIndex();
         }
     }
 }

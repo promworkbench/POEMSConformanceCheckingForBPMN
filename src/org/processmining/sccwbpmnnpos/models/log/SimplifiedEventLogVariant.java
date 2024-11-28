@@ -5,7 +5,7 @@ import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 public interface SimplifiedEventLogVariant extends Iterable<Activity> {
     SimplifiedEventLog getEventLog();
 
-    SimplifiedEventLogTrace getTrace();
+    EventLogTrace getTrace();
 
     Integer getCardinality();
 }

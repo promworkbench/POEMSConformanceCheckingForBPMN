@@ -68,6 +68,11 @@ public class BpmnPartiallyOrderedPathImpl implements BpmnPartiallyOrderedPath {
     }
 
     @Override
+    public int getNumberOfConnections() {
+        return path.getNumberOfConnections();
+    }
+
+    @Override
     public int size() {
         return path.size();
     }

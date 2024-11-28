@@ -3,9 +3,7 @@ package org.processmining.sccwbpmnnpos.models.utils.activity.factory;
 import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.activity.ActivityImpl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class CachedActivityFactory implements ActivityFactory {
     final Map<String, Activity> activityMap;
@@ -24,4 +22,11 @@ public class CachedActivityFactory implements ActivityFactory {
         }
         return activity;
     }
+
+    @Override
+    public Collection<Activity> getAlphabet() {
+        return activityMap.values();
+    }
+
+
 }

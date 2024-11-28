@@ -307,6 +307,11 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
         return toGraphVizString();
     }
 
+    @Override
+    public int getNumberOfConnections() {
+        return predecessors.stream().mapToInt(Set::size).sum();
+    }
+
     public String toGraphVizString() {
         StringBuilder buildGViz = new StringBuilder("digraph G {\n");
 

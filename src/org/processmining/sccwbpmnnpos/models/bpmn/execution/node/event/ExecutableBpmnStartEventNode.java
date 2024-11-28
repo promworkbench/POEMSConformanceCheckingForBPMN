@@ -41,4 +41,14 @@ public class ExecutableBpmnStartEventNode extends AbstractExecutableBpmnNode {
     public Collection<BpmnNodeFiringOption> getFiringOptions() {
         return produceOptions;
     }
+
+    @Override
+    public int getProducesTokensCount() {
+        return produceOptions.iterator().next().getMarking().size();
+    }
+
+    @Override
+    public int getConsumesTokensCount() {
+        return 0;
+    }
 }

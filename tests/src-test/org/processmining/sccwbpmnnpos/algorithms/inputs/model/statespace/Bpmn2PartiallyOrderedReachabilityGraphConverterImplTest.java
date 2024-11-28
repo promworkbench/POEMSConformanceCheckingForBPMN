@@ -5,14 +5,12 @@ import org.junit.Test;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2PartiallyOrderedReachabilityGraphConverterImpl;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2ReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2POReachabilityGraphConverterImpl;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2POReachabilityGraphConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.reachabilitygraph.ReachabilityGraphUtils;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
 import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.BpmnMarkingFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.DefaultBpmnMarkingFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.factory.BpmnTokenFactory;
@@ -32,13 +30,11 @@ import org.processmining.stochasticbpmn.algorithms.reader.BpmnInputStreamReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectFilePathReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
 
-import java.util.Set;
-
 public class Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest {
     private static final String modelsFolder = "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research" +
             "/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/";
     private final ObjectReader<String, BPMNDiagram> diagramReader;
-    private final Bpmn2ReachabilityGraphConverter bpmnReachabilityGraphCreator;
+    private final Bpmn2POReachabilityGraphConverter bpmnReachabilityGraphCreator;
 
     public Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest() {
         this.diagramReader = new ObjectFilePathReader<>(new BpmnDiagramReader(new BpmnInputStreamReader(),
@@ -53,7 +49,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest {
                         markingFactory, markingUtils));
         CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
         this.bpmnReachabilityGraphCreator =
-                new Bpmn2PartiallyOrderedReachabilityGraphConverterImpl(executableNodeFactory, markingFactory,
+                new Bpmn2POReachabilityGraphConverterImpl(executableNodeFactory, markingFactory,
                         cartesianProductCalculator);
     }
 

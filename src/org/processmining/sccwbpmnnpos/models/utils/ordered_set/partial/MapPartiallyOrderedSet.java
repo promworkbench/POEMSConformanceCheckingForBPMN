@@ -174,6 +174,11 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
     }
 
     @Override
+    public int getNumberOfConnections() {
+        return map.values().stream().mapToInt(Set::size).sum();
+    }
+
+    @Override
     public Iterator<ELEMENT> iterator() {
         return new Iterator<ELEMENT>() {
             final Set<ELEMENT> executed = new HashSet<>();

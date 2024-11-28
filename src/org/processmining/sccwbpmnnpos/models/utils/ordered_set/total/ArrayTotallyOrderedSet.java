@@ -180,4 +180,9 @@ public class ArrayTotallyOrderedSet<ELEMENT> implements TotallyOrderedSet<ELEMEN
     public String toString() {
         return elements.toString();
     }
+
+    @Override
+    public int getNumberOfConnections() {
+        return size() - 1;
+    }
 }

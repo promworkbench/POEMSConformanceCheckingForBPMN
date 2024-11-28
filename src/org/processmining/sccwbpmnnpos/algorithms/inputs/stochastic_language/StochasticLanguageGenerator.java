@@ -1,0 +1,65 @@
+package org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language;
+
+import org.deckfour.xes.classification.XEventClassifier;
+import org.deckfour.xes.classification.XEventNameClassifier;
+import org.deckfour.xes.model.XLog;
+import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path.StochasticBpmnPORG2StochasticPathLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.StochasticGraphPathSamplingStrategy;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.StochasticGraphPathSamplingStrategy.Type;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactory;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguage;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
+import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
+
+public interface StochasticLanguageGenerator {
+    static StochasticLanguageGenerator getInstance(ActivityFactory activityFactory) {
+        return getInstance(activityFactory, new XEventNameClassifier(), StochasticGraphPathSamplingStrategy.getDefaultType());
+    }
+
+    static StochasticLanguageGenerator getInstance(ActivityFactory activityFactory, XEventClassifier defaultClassifier, Type samplingStrategy) {
+        ExecutableStochasticBpmnNodeFactory nodeFactory = ExecutableStochasticBpmnNodeFactory.getInstance();
+        StochasticBpmn2POReachabilityGraphConverter sbpmn2Graph =
+                StochasticBpmn2POReachabilityGraphConverter.getInstance(nodeFactory);
+
+        Xlog2StochasticTraceLanguageConverter log2Trace =
+                Xlog2StochasticTraceLanguageConverter.getInstance(defaultClassifier, activityFactory);
+        StochasticBpmnPORG2StochasticPathLanguageConverter graph2POPath =
+                StochasticBpmnPORG2StochasticPathLanguageConverter.getInstance(samplingStrategy, nodeFactory);
+        StochasticBpmnPORG2StochasticTraceLanguageConverter graph2POTrace =
+                StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, samplingStrategy);
+
+        return new StochasticLanguageGeneratorImpl(log2Trace, sbpmn2Graph, graph2POPath, graph2POTrace);
+    }
+
+    static StochasticLanguageGenerator getInstance(XEventClassifier defaultClassifier, Type samplingStrategy) {
+        return getInstance(ActivityFactory.getInstance(), defaultClassifier, samplingStrategy);
+    }
+
+    static StochasticLanguageGenerator getInstance(Type samplingStrategy) {
+        return getInstance(new XEventNameClassifier(), samplingStrategy);
+    }
+
+    static StochasticLanguageGenerator getInstance() {
+        return getInstance(StochasticGraphPathSamplingStrategy.getDefaultType());
+    }
+
+    BpmnStochasticPOPathLanguage poPath(final StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException,
+            BpmnUnboundedException;
+
+    BpmnStochasticPOTraceLanguage poTrace(final StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException
+            , BpmnUnboundedException;
+
+    BpmnStochasticPOPathLanguage poPath(final ReachabilityGraph graph);
+
+    BpmnStochasticPOTraceLanguage poTrace(final ReachabilityGraph graph);
+
+    EventLogStochasticTOTraceLanguage trace(final XLog log);
+}

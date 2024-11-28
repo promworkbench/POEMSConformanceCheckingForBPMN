@@ -35,7 +35,19 @@ public class ExecutableBpmnParallelGatewayNode extends AbstractExecutableBpmnNod
     }
 
     @Override
+    public int getProducesTokensCount() {
+        return produceOptions.iterator().next().getMarking().size();
+    }
+
+    @Override
+    public int getConsumesTokensCount() {
+        return consumeOptions.iterator().next().size();
+    }
+
+    @Override
     protected Collection<BpmnMarking> getConsumeOptions() {
         return consumeOptions;
     }
+
+
 }

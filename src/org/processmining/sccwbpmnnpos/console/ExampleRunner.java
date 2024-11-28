@@ -1,99 +1,52 @@
 package org.processmining.sccwbpmnnpos.console;
 
-import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
-import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.execution.BpmnPOPath2TraceConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.execution.BpmnPOPath2TraceConverterImpl;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2PartiallyOrderedReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2ReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.StochasticBpmnRG2StochasticLanguagePathConverterImpl;
-import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.CartesianProductCalculator;
-import org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct.NestedLoopsCartesianProductCalculator;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.PriorityQueueStochasticSamplingStrategy;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.MostProbableStochasticGraphPathSamplingStrategy;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.graph.RandomStochasticGraphPathSamplingStrategy;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.BpmnMarkingFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.DefaultBpmnMarkingFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.factory.BpmnTokenFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.factory.SimpleBpmnTokenFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.utils.BpmnMarkingUtils;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.utils.SimpleBpmnMarkingUtils;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.CachedExecutableBpmnNodeFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.ExecutableBpmnNodeFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.SimpleExecutableBpmnNodeFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnNode2ActivityFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.CachedBpmnNode2ActivityFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactoryImpl;
-import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.BpmnStochasticPathLanguage;
-import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguageEntry;
+import org.apache.log4j.Appender;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.lf5.LogLevel;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Loggers;
+import org.apache.logging.log4j.status.StatusLogger;
+import org.deckfour.xes.model.XLog;
+import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
+import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
-import org.processmining.sccwbpmnnpos.models.utils.activity.factory.CachedActivityFactory;
-import org.processmining.sccwbpmnnpos.models.utils.multiset.factory.DefaultMultisetFactory;
-import org.processmining.sccwbpmnnpos.models.utils.multiset.factory.MultisetFactory;
-import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.MultisetUtils;
-import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.SimpleMultisetUtils;
-import org.processmining.stochasticbpmn.algorithms.diagram.builder.StochasticBPMNDiagramBuilderImpl;
+import org.processmining.sccwbpmnnpos.utils.log.XLogReader;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
-import org.processmining.stochasticbpmn.algorithms.reader.ObjectFilePathReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
-import org.processmining.stochasticbpmn.algorithms.reader.StochasticBPMNInputStreamReader;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExampleRunner {
-    public static void main(String[] args) {
-        ActivityFactory activityFactory = new CachedActivityFactory();
-        BpmnNode2ActivityFactory node2Activity = new CachedBpmnNode2ActivityFactory(activityFactory);
-        BpmnPOPath2TraceConverter toTrace = new BpmnPOPath2TraceConverterImpl(node2Activity);
-        StochasticBpmnRG2StochasticLanguagePathConverterImpl toStochasticLanguage =
-                new StochasticBpmnRG2StochasticLanguagePathConverterImpl(new RandomStochasticGraphPathSamplingStrategy<>());
-        MultisetFactory multisetFactory = new DefaultMultisetFactory();
-        MultisetUtils multisetUtils = new SimpleMultisetUtils(multisetFactory);
-        BpmnTokenFactory tokenFactory = new SimpleBpmnTokenFactory();
-        BpmnMarkingFactory markingFactory = new DefaultBpmnMarkingFactory(multisetFactory);
-        BpmnMarkingUtils markingUtils = new SimpleBpmnMarkingUtils(multisetUtils, markingFactory);
-        ExecutableBpmnNodeFactory executableNodeFactory =
-                new CachedExecutableBpmnNodeFactory(new ExecutableStochasticBpmnNodeFactoryImpl(new SimpleExecutableBpmnNodeFactory(tokenFactory,
-                        markingFactory, markingUtils), tokenFactory, markingFactory, markingUtils));
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleRunner.class);
 
-        CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
-        StochasticBpmn2ReachabilityGraphConverter bpmn2StochasticLanguageConverter =
-                new StochasticBpmn2PartiallyOrderedReachabilityGraphConverter(executableNodeFactory, markingFactory,
-                        cartesianProductCalculator);
-        ObjectReader<String, StochasticBPMNDiagram> diagramReader =
-                new ObjectFilePathReader<>(new StochasticBPMNDiagramReader(new StochasticBPMNInputStreamReader(),
-                        new StochasticBPMNDiagramBuilderImpl()));
+    public static void main(String[] args) {
+        ObjectReader<String, XLog> logReader = XLogReader.fromFileName();
+        ActivityFactory activityFactory = ActivityFactory.getInstance();
+        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory);
+        ObjectReader<String, StochasticBPMNDiagram> diagramReader = StochasticBPMNDiagramReader.fromFileName();
+        POEMSConformanceCheckingEMSC24Adapter POEMSConformanceCheckingEmsc24Adapter = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+
         try {
-            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest" +
-                    "/alkuzman/Research/Concepts/Process Management/Process Mining/Process " +
-                    "Models/BPMN/Instances/Instance - BPMN - Handling of Compensation Requests.bpmn");
-            ReachabilityGraph stateSpace = bpmn2StochasticLanguageConverter.convert(diagram);
-            BpmnStochasticPathLanguage stochasticLanguage = toStochasticLanguage.convert(stateSpace);
-            for (StochasticLanguageEntry<BPMNNode, BpmnPartiallyOrderedPath> entry : stochasticLanguage) {
-                System.out.println(entry);
-                System.out.println("----------------------------------------");
-                System.out.println(toTrace.convert(entry.getElement()));
-                System.out.println("========================================");
-            }
-            System.out.println(stochasticLanguage);
+            LOGGER.error("Reading Log");
+            final XLog log = logReader.read
+                    ("/home/aleks/Documents/Learn/MasterThesis/SCCwBPMN/Data/Road Trafic Fines/Log/Road_Traffic_Fine_Management_Process.xes");
+            LOGGER.error("Reading Stochastic BPMN");
+            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Instance - Stochastic BPMN - rtfm_IMf02_ABE.bpmn");
+
+            LOGGER.error("Generating Log Stochastic Language");
+            EventLogStochasticTOTraceLanguage stochasticLogLanguage = languageGenerator.trace(log);
+            LOGGER.error("Generating BPMN Stochastic Language");
+            BpmnStochasticPOTraceLanguage stochasticModelLanguage = languageGenerator.poTrace(diagram);
+            LOGGER.error("Calculating POEMS conformance checking");
+            POEMSConformanceCheckingResult poemsConformanceCheckingResult = POEMSConformanceCheckingEmsc24Adapter.calculateConformance(stochasticModelLanguage, stochasticLogLanguage);
+            System.out.println(poemsConformanceCheckingResult);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-/*        final ObjectReader<String, XLog> logReader = new ObjectFilePathReader<>(new XLogReaderImpl());
-        final XLogSimplifier logSimplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new
-                SimpleActivityRegistry());
-        final SimplifiedLogToStochasticLanguageConverter log2SimplifiedLanguageConverter = new
-                SimplifiedLogToStochasticLanguageConverterImpl();
-        try {
-            final XLog log = logReader.read
-            ("/home/aleks/Documents/Learn/MasterThesis/SCCwBPMN/Data/Sepsis/Log/Sepsis Cases - Event Log.xes");
-            final SimplifiedEventLog simpleLog = logSimplifier.simplify(log);
-            final StochasticLanguage<Activity, TotallyOrderedTrace> stochasticLanguage =
-            log2SimplifiedLanguageConverter.convert(simpleLog);
-            System.out.println(stochasticLanguage);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }*/
     }
 }

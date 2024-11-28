@@ -50,9 +50,17 @@ public class BpmnEdgeToken implements BpmnToken {
     @Override
     public String toString() {
         String label = edge.getLabel();
-        if (Objects.isNull(label) || label.isEmpty()) {
-            return edge.getEdgeID().toString();
+        if (Objects.nonNull(label) && !label.isEmpty()) {
+            return label;
         }
-        return label;
+//        if (Objects.isNull(label) || label.isEmpty()) {
+//            return edge.getEdgeID().toString();
+//        }
+
+        String s = String.valueOf(getSourceNode().hashCode());
+        String sIdx = s.substring(s.length() - 3);
+        String t = String.valueOf(getSinkNode().hashCode());
+        String tIdx = t.substring(s.length() - 3);
+        return sIdx + " " + getSourceNode()  + " < " + tIdx + " " + getSinkNode();
     }
 }

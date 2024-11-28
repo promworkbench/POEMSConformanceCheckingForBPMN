@@ -42,4 +42,16 @@ public class ExecutableBpmnExclusiveGatewayNode extends AbstractExecutableBpmnNo
     public Collection<BpmnNodeFiringOption> getFiringOptions() {
         return produceOptions;
     }
+
+    @Override
+    public int getProducesTokensCount() {
+        return 1;
+    }
+
+    @Override
+    public int getConsumesTokensCount() {
+        return 1;
+    }
+
+
 }

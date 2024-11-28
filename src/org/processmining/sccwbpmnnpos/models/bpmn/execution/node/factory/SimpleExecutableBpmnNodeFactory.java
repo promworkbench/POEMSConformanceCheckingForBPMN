@@ -13,7 +13,7 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.event.Executabl
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.event.ExecutableBpmnStartEventNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.gateway.ExecutableBpmnExclusiveGatewayNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.gateway.ExecutableBpmnParallelGatewayNode;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.task.ExecutableBpmnActivityNode;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.task.activity.ExecutableBpmnActivityNode;
 
 import java.util.Objects;
 

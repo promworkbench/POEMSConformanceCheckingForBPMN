@@ -3,28 +3,28 @@ package org.processmining.sccwbpmnnpos.models.log.impl.basic;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
-import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLogTrace;
+import org.processmining.sccwbpmnnpos.models.log.EventLogTrace;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLogVariant;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MSetSimplifiedEventLog implements SimplifiedEventLog {
-    private final Multiset<SimplifiedEventLogTrace> traces;
+    private final Multiset<EventLogTrace> traces;
 
 
     public MSetSimplifiedEventLog() {
         this.traces = HashMultiset.create();
     }
 
-    public void add(final SimplifiedEventLogTrace trace, final Integer cardinality) {
+    public void add(final EventLogTrace trace, final Integer cardinality) {
         assert Objects.nonNull(trace);
         assert Objects.nonNull(cardinality);
         assert cardinality > 0;
         traces.add(trace, cardinality);
     }
 
-    public void remove(final SimplifiedEventLogTrace trace, final Integer cardinality) {
+    public void remove(final EventLogTrace trace, final Integer cardinality) {
         assert Objects.nonNull(trace);
         assert Objects.nonNull(cardinality);
         assert cardinality > 0;
@@ -48,7 +48,7 @@ public class MSetSimplifiedEventLog implements SimplifiedEventLog {
     }
 
     @Override
-    public Collection<SimplifiedEventLogTrace> getTraces() {
+    public Collection<EventLogTrace> getTraces() {
         return traces;
     }
 

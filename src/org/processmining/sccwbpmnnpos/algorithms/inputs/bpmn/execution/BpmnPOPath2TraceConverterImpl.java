@@ -2,12 +2,11 @@ package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.execution;
 
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnModelTrace;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnModelTraceImpl;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnNode2ActivityFactory;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnPartiallyOrderedTrace;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnPartiallyOrderedTraceImpl;
+import org.processmining.sccwbpmnnpos.models.bpmn.activity.BpmnNode2ActivityFactory;
 import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
-import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet.Event;
 
 import java.util.*;
@@ -20,8 +19,8 @@ public class BpmnPOPath2TraceConverterImpl implements BpmnPOPath2TraceConverter 
     }
 
     @Override
-    public BpmnModelTrace convert(BpmnPartiallyOrderedPath path) {
-        BpmnModelTrace trace = new BpmnModelTraceImpl();
+    public BpmnPartiallyOrderedTrace convert(BpmnPartiallyOrderedPath path) {
+        BpmnPartiallyOrderedTrace trace = new BpmnPartiallyOrderedTraceImpl();
         Map<Event<BPMNNode>, Event<Activity>> nodeToActivityEventMap = new HashMap<>();
         for (Event<BPMNNode> nodeEvent : path.getPartiallyOrderedSet()) {
             if (!(nodeEvent.getItem() instanceof org.processmining.models.graphbased.directed.bpmn.elements.Activity)) {
@@ -41,7 +40,8 @@ public class BpmnPOPath2TraceConverterImpl implements BpmnPOPath2TraceConverter 
                     try {
                         trace.connect(predecessorActivityEvent, activityEvent);
                     } catch (PartialOrderLoopNotAllowedException e) {
-                        throw new RuntimeException("Loops should not be problem while converting BPMN path to model trace. Fix this.", e);
+                        throw new RuntimeException("Loops should not be problem while converting BPMN path to model " +
+                                "trace. Fix this.", e);
                     }
                 } else {
                     queue.addAll(path.getPartiallyOrderedSet().getPredecessors(predecessorNodeEvent));
