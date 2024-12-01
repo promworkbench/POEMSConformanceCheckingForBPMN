@@ -8,6 +8,7 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.exceptions.Bpmn
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface ExecutableBpmnNode {
     BPMNDiagram getModel();
@@ -20,34 +21,25 @@ public interface ExecutableBpmnNode {
 
     int getTimesEnabledIn(final BpmnMarking marking);
 
-    Collection<BpmnNodeFiringOption> getFiringOptions();
+    Collection<BpmnMarking> getProduceOptions();
 
-    BpmnNodeFiringOption getDefaultFiringOption();
+    Collection<BpmnMarking> getConsumeOptions();
 
-    void setDefaultFiringOption(final BpmnNodeFiringOption firingOption);
+    List<List<BpmnNodeFiringOption>> getFiringOptions(BpmnMarking marking);
+
+    List<BpmnNodeFiringOption> getDefaultFiringOption(BpmnMarking marking);
+
+    void setDefaultProduceOption(final BpmnMarking firingOption);
 
     BpmnFiringChange fire(final BpmnMarking marking, final BpmnNodeFiringOption firingOption, final int fireTimes) throws BpmnNodeNotEnabledException;
-
-    default BpmnFiringChange fire(final BpmnMarking marking, final int fireTimes) throws BpmnNodeNotEnabledException {
-        return this.fire(marking, getDefaultFiringOption(), fireTimes);
-    }
 
     default BpmnFiringChange fireOne(final BpmnMarking marking, final BpmnNodeFiringOption firingOption) throws BpmnNodeNotEnabledException {
         return this.fire(marking, firingOption, 1);
     }
 
-    default BpmnFiringChange fireOne(final BpmnMarking marking) throws BpmnNodeNotEnabledException {
-        return this.fire(marking, 1);
-    }
-
     default BpmnFiringChange fireAll(final BpmnMarking marking, final BpmnNodeFiringOption firingOption) throws BpmnNodeNotEnabledException {
         int timesEnabled = getTimesEnabledIn(marking);
         return this.fire(marking, firingOption, timesEnabled);
-    }
-
-    default BpmnFiringChange fireAll(final BpmnMarking marking) throws BpmnNodeNotEnabledException {
-        int timesEnabled = getTimesEnabledIn(marking);
-        return this.fire(marking, timesEnabled);
     }
 
     String toString();

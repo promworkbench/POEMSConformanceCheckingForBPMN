@@ -33,6 +33,15 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
     }
 
     @Override
+    public Event<I> fire(I item, int executionIndex) {
+        if (getTimesFired(item) > executionIndex) {
+            return null;
+        }
+
+        return null;
+    }
+
+    @Override
     public Event<I> getEvent(I item) {
         int timesFired = getTimesFired(item);
         return new Event<>(item, timesFired);

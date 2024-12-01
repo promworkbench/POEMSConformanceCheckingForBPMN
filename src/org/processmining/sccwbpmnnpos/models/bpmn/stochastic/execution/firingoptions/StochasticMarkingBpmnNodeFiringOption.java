@@ -8,8 +8,10 @@ import org.processmining.stochasticbpmn.models.stochastic.Probability;
 public class StochasticMarkingBpmnNodeFiringOption extends MarkingBpmnNodeFiringOption implements StochasticBpmnNodeFiringOption {
     private final Probability probability;
 
-    public StochasticMarkingBpmnNodeFiringOption(ExecutableBpmnNode node, BpmnMarking marking, Probability probability) {
-        super(node, marking);
+    public StochasticMarkingBpmnNodeFiringOption(ExecutableBpmnNode node, BpmnMarking consumeMarking,
+                                                 BpmnMarking produceMarking,
+                                                 Probability probability) {
+        super(node, consumeMarking, produceMarking);
         this.probability = probability;
     }
 

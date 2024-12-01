@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 
 public class ExecutableBpmnParallelGatewayNode extends AbstractExecutableBpmnNode {
     private final Collection<BpmnMarking> consumeOptions;
-    private final Collection<BpmnNodeFiringOption> produceOptions;
+    private final Collection<BpmnMarking> produceOptions;
 
     public ExecutableBpmnParallelGatewayNode(BPMNDiagram model, BPMNNode node, BpmnMarkingUtils markingUtils, BpmnTokenFactory tokenFactory, BpmnMarkingFactory markingFactory) {
         super(model, node, markingUtils);
         consumeOptions = Collections.singleton(markingFactory.create(model, model.getInEdges(node).stream().map(tokenFactory::create).collect(Collectors.toSet())));
-        produceOptions = Collections.singleton(new MarkingBpmnNodeFiringOption(this, markingFactory.create(model, model.getOutEdges(node).stream().map(tokenFactory::create).collect(Collectors.toSet()))));
+        produceOptions = Collections.singleton(markingFactory.create(model, model.getOutEdges(node).stream().map(tokenFactory::create).collect(Collectors.toSet())));
     }
 
     @Override
@@ -30,13 +30,13 @@ public class ExecutableBpmnParallelGatewayNode extends AbstractExecutableBpmnNod
     }
 
     @Override
-    public Collection<BpmnNodeFiringOption> getFiringOptions() {
+    public Collection<BpmnMarking> getProduceOptions() {
         return produceOptions;
     }
 
     @Override
     public int getProducesTokensCount() {
-        return produceOptions.iterator().next().getMarking().size();
+        return produceOptions.iterator().next().size();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ExecutableBpmnParallelGatewayNode extends AbstractExecutableBpmnNod
     }
 
     @Override
-    protected Collection<BpmnMarking> getConsumeOptions() {
+    public Collection<BpmnMarking> getConsumeOptions() {
         return consumeOptions;
     }
 

@@ -5,18 +5,18 @@ import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.BpmnFiringChange;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.BpmnFiringChangeImpl;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.BpmnNodeFiringOption;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.MarkingBpmnNodeFiringOption;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.utils.BpmnMarkingUtils;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.exceptions.BpmnNodeNotEnabledException;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractExecutableBpmnNode implements ExecutableBpmnNode {
     private final BPMNNode node;
     private final BPMNDiagram model;
     private final BpmnMarkingUtils markingUtils;
-    private BpmnNodeFiringOption defaultFiringOption;
+    private BpmnMarking defaultProduceOption;
 
     public AbstractExecutableBpmnNode(BPMNDiagram model, BPMNNode node, BpmnMarkingUtils markingUtils) {
         this.node = node;
@@ -28,8 +28,6 @@ public abstract class AbstractExecutableBpmnNode implements ExecutableBpmnNode {
     public BPMNDiagram getModel() {
         return model;
     }
-
-    protected abstract Collection<BpmnMarking> getConsumeOptions();
 
     @Override
     public boolean equals(Object o) {
@@ -66,38 +64,53 @@ public abstract class AbstractExecutableBpmnNode implements ExecutableBpmnNode {
     }
 
     @Override
-    public final BpmnNodeFiringOption getDefaultFiringOption() {
-        if (Objects.isNull(defaultFiringOption)) {
-            defaultFiringOption = getFiringOptions().iterator().next();
+    public List<BpmnNodeFiringOption> getDefaultFiringOption(BpmnMarking marking) {
+        if (Objects.isNull(defaultProduceOption)) {
+            defaultProduceOption = getProduceOptions().iterator().next();
         }
-        return defaultFiringOption;
+        List<BpmnNodeFiringOption> firingOptions = new LinkedList<>();
+        for (BpmnMarking consumeOption : getConsumeOptions()) {
+            int containedTimes = markingUtils.isContainedTimes(marking, consumeOption);
+            for (int i = 0; i < containedTimes; i++) {
+                firingOptions.add(newFiringOption(consumeOption, defaultProduceOption));
+            }
+        }
+        return firingOptions;
     }
 
     @Override
-    public void setDefaultFiringOption(BpmnNodeFiringOption firingOption) {
-        this.defaultFiringOption = firingOption;
+    public void setDefaultProduceOption(BpmnMarking marking) {
+        this.defaultProduceOption = marking;
+    }
+
+    @Override
+    public List<List<BpmnNodeFiringOption>> getFiringOptions(BpmnMarking marking) {
+        List<List<BpmnNodeFiringOption>> firingOptions = new LinkedList<>();
+        for (BpmnMarking consumeOption : getConsumeOptions()) {
+            int containedTimes = markingUtils.isContainedTimes(marking, consumeOption);
+            for (int i = 0; i < containedTimes; i++) {
+                LinkedList<BpmnNodeFiringOption> oneConsumeFiringOptions = new LinkedList<>();
+                for (BpmnMarking produceOption : getProduceOptions()) {
+                    oneConsumeFiringOptions.add(newFiringOption(consumeOption, produceOption));
+                }
+                firingOptions.add(oneConsumeFiringOptions);
+            }
+        }
+        return firingOptions;
     }
 
     @Override
     public BpmnFiringChange fire(BpmnMarking marking, BpmnNodeFiringOption firingOption, int fireTimes) throws BpmnNodeNotEnabledException {
-        final BpmnMarking produceMarking = markingUtils.multiply(firingOption.getMarking(), fireTimes);
-        int remainingToConsume = fireTimes;
-        BpmnMarking consumeMarking = markingUtils.emptyMarking(getModel());
-        for (BpmnMarking consumeOption : getConsumeOptions()) {
-            int consumeTimes = markingUtils.isContainedTimes(marking, consumeOption);
-            if (remainingToConsume < consumeTimes) {
-                consumeTimes = remainingToConsume;
-                remainingToConsume = 0;
-            } else {
-                remainingToConsume -= consumeTimes;
-            }
-            BpmnMarking totalConsumeOptions = markingUtils.multiply(consumeOption, consumeTimes);
-            consumeMarking = markingUtils.sum(consumeMarking, totalConsumeOptions);
-            if (remainingToConsume == 0) break;
-        }
+        final BpmnMarking produceMarking = markingUtils.multiply(firingOption.getProducesMarking(), fireTimes);
+        final BpmnMarking consumeMarking = markingUtils.multiply(firingOption.getConsumesMarking(), fireTimes);
         final BpmnMarking resultMarking = markingUtils.sum(markingUtils.difference(marking, consumeMarking),
                 produceMarking);
         return new BpmnFiringChangeImpl(marking, consumeMarking, produceMarking, resultMarking);
+    }
+
+    protected BpmnNodeFiringOption newFiringOption(final BpmnMarking consumeMarking,
+                                                         final BpmnMarking produceMarking) {
+        return new MarkingBpmnNodeFiringOption(this, consumeMarking, produceMarking);
     }
 
 //    protected final boolean hasAtLeastOneIncomingToken(final BpmnMarking marking) {

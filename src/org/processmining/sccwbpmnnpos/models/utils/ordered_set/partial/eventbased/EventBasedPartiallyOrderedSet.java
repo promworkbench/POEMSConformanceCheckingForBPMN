@@ -9,6 +9,8 @@ import java.util.Objects;
 public interface EventBasedPartiallyOrderedSet<I> extends AlphabetCollection<I> {
     Event<I> fire(I item);
 
+    Event<I> fire(I item, int executionIndex);
+
     int getTimesFired(I item);
 
     Event<I> getEvent(I item);
@@ -20,8 +22,6 @@ public interface EventBasedPartiallyOrderedSet<I> extends AlphabetCollection<I> 
     void connect(Event<I> predecessor, Event<I> successor) throws PartialOrderLoopNotAllowedException;
 
     void connect(I predecessor, int predecessorIdx, I successor, int successorIdx) throws PartialOrderLoopNotAllowedException;
-
-    ;
 
     void connectLast(I predecessor, I successor) throws PartialOrderLoopNotAllowedException;
 

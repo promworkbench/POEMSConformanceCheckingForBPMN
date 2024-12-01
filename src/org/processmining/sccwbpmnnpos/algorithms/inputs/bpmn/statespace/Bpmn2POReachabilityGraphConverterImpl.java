@@ -1,7 +1,5 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
@@ -132,7 +130,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             return marking;
         }
         Collection<ExecutableBpmnNode> nonChoiceNodes =
-                nodes.stream().filter(n -> !n.isChoice() || n.getFiringOptions().size() == 1).collect(Collectors.toList());
+                nodes.stream().filter(n -> !n.isChoice() || n.getProduceOptions().size() == 1).collect(Collectors.toList());
         if (nonChoiceNodes.isEmpty()) {
             return marking;
         }
@@ -154,10 +152,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         }
         List<Collection<BpmnNodeFiringOption>> options = new LinkedList<>();
         for (ExecutableBpmnNode node : nodes) {
-            int count = node.getTimesEnabledIn(marking);
-            for (int i = 0; i < count; i++) {
-                options.add(node.getFiringOptions());
-            }
+            options.addAll(node.getFiringOptions(marking));
         }
         List<List<BpmnNodeFiringOption>> cartesianProduct = cartesianProductCalculator.calculate(options);
 //        Map<BpmnMarking, List<BpmnNodeFiringOption>> uniqueCombinations = new HashMap<>();
@@ -199,12 +194,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             BpmnNoOptionToCompleteException {
         Collection<BpmnNodeFiringOption> firingOptions = new LinkedList<>();
         for (ExecutableBpmnNode node : nodes) {
-            for (BpmnNodeFiringOption firingOption : node.getFiringOptions()) {
-                int timesEnabled = node.getTimesEnabledIn(marking);
-                for (int i = 0; i < timesEnabled; i++) {
-                    firingOptions.add(firingOption);
-                }
-            }
+            firingOptions.addAll(node.getDefaultFiringOption(marking));
         }
         return executeOnce(firingOptions, marking, path);
     }
@@ -213,7 +203,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         Collection<ExecutableBpmnNode> nodes = diagram.getStartNodes();
         BpmnPartiallyOrderedPath path = newPath();
         List<BpmnNodeFiringOption> options =
-                nodes.stream().flatMap(n -> n.getFiringOptions().stream()).collect(Collectors.toList());
+                nodes.stream().flatMap(n -> n.getDefaultFiringOption(markingUtils.emptyMarking(diagram.getDiagram())).stream()).collect(Collectors.toList());
         BpmnMarking initialMarking = null;
         try {
             initialMarking = executeOnce(options, markingUtils.emptyMarking(diagram.getDiagram()), path);

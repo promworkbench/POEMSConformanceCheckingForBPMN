@@ -19,16 +19,16 @@ import java.util.stream.Collectors;
 
 public class ExecutableBpmnEndEventNode extends AbstractExecutableBpmnNode {
     private final Collection<BpmnMarking> consumeOptions;
-    private final Collection<BpmnNodeFiringOption> produceOptions;
+    private final Collection<BpmnMarking> produceOptions;
 
     public ExecutableBpmnEndEventNode(BPMNDiagram model, BPMNNode node, BpmnMarkingUtils markingUtils, BpmnTokenFactory tokenFactory, BpmnMarkingFactory markingFactory) {
         super(model, node, markingUtils);
         consumeOptions = model.getInEdges(node).stream().map(e -> markingFactory.create(model, Collections.singleton(tokenFactory.create(e)))).collect(Collectors.toSet());
-        produceOptions = Collections.singleton(new MarkingBpmnNodeFiringOption(this, markingFactory.getEmpty(model)));
+        produceOptions = Collections.singleton(markingFactory.getEmpty(model));
     }
 
     @Override
-    protected Collection<BpmnMarking> getConsumeOptions() {
+    public Collection<BpmnMarking> getConsumeOptions() {
         return consumeOptions;
     }
 
@@ -38,7 +38,7 @@ public class ExecutableBpmnEndEventNode extends AbstractExecutableBpmnNode {
     }
 
     @Override
-    public Collection<BpmnNodeFiringOption> getFiringOptions() {
+    public Collection<BpmnMarking> getProduceOptions() {
         return produceOptions;
     }
 
