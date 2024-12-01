@@ -1,25 +1,19 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path;
 
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
-import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
 import org.processmining.models.graphbased.directed.transitionsystem.Transition;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.path.BpmnPOReachabilityGraphPathConstructor;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmnReachabilityEdge;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.ReachabilityGraphUtils;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.Sampler;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.BpmnToken;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.ExecutableBpmnNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPath;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPathImpl;
-import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactory;
-import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPOPathLanguageImpl;
+import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguageImpl;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguage;
-import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.RepetitiveEventBasedPartiallyOrderedSet;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
@@ -29,93 +23,36 @@ import java.util.Objects;
 
 public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements StochasticBpmnPORG2StochasticPathLanguageConverter {
     private final StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy;
-    private final ExecutableStochasticBpmnNodeFactory executableNodeFactory;
     private final StochasticLanguageGeneratorStopper stopper;
+    private final BpmnPOReachabilityGraphPathConstructor pathConstructor;
 
-    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, StochasticLanguageGeneratorStopper stopper, ExecutableStochasticBpmnNodeFactory executableNodeFactory) {
+    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, StochasticLanguageGeneratorStopper stopper, BpmnPOReachabilityGraphPathConstructor pathConstructor) {
         this.samplingStrategy = samplingStrategy;
-        this.executableNodeFactory = executableNodeFactory;
         this.stopper = stopper;
+        this.pathConstructor = pathConstructor;
     }
 
     @Override
     public BpmnStochasticPOPathLanguage convert(ReachabilityGraph rg) {
         Sampler<IntermediatePathOption> sampler = samplingStrategy.getSampler();
-        BpmnStochasticPOPOPathLanguageImpl stochasticLanguage = new BpmnStochasticPOPOPathLanguageImpl();
+        BpmnStochasticPOPathLanguageImpl stochasticLanguage = new BpmnStochasticPOPathLanguageImpl();
         State initialState = ReachabilityGraphUtils.getInitialState(rg, BpmnMarking.class);
         addNextSample(sampler, rg, getNewPath(), Probability.ONE, initialState);
-        for (IntermediatePathOption intermediatePathOption : sampler) {
-            BpmnPartiallyOrderedPath newPath = constructNewPath(intermediatePathOption);
-            BpmnMarking marking = (BpmnMarking) intermediatePathOption.getNextState().getIdentifier();
+        for (IntermediatePathOption pathOption : sampler) {
+            BpmnPartiallyOrderedPath newPath = pathConstructor.construct(pathOption.getPath(), pathOption.getAdditionPath(), pathOption.getCurrentMarking());
+            BpmnMarking marking = (BpmnMarking) pathOption.getNextState().getIdentifier();
             if (marking.isFinal()) {
-                stochasticLanguage.add(newPath, intermediatePathOption.getProbability());
+                stochasticLanguage.add(newPath, pathOption.getProbability());
                 if (stopper.shouldStop(stochasticLanguage)) {
                     break;
                 }
             } else {
-                addNextSample(sampler, rg, newPath, intermediatePathOption.getProbability(),
-                        intermediatePathOption.getNextState());
+                addNextSample(sampler, rg, newPath, pathOption.getProbability(),
+                        pathOption.getNextState());
             }
 
         }
         return stochasticLanguage;
-    }
-
-    private BpmnPartiallyOrderedPath constructNewPath(IntermediatePathOption intermediatePathOption) {
-        BpmnPartiallyOrderedPath newPath = getNewPath();
-        BpmnPartiallyOrderedPath basePath = intermediatePathOption.getPath();
-        BpmnPartiallyOrderedPath additionPath = intermediatePathOption.getAdditionPath();
-
-        try {
-            newPath.concatenate(basePath);
-            newPath.concatenate(additionPath);
-        } catch (PartialOrderLoopNotAllowedException e) {
-            throw new RuntimeException("This should not happen because we are merging repetitive partial orders", e);
-        }
-
-        BpmnMarking marking = (BpmnMarking) (intermediatePathOption.getCurrentState().getIdentifier());
-
-        if (marking.isInitial()) {
-            return newPath;
-        }
-
-        TObjectIntMap<BPMNNode> tokensProduced = new TObjectIntHashMap<>();
-        for (BpmnToken token : marking) {
-            tokensProduced.adjustOrPutValue(token.getSourceNode(), 1, 1);
-        }
-
-        TObjectIntMap<BPMNNode> tokensConsumed = new TObjectIntHashMap<>();
-        for (BpmnToken token : marking) {
-            tokensConsumed.adjustOrPutValue(token.getSinkNode(), 1, 1);
-        }
-
-        TObjectIntMap<BPMNNode> sourceCount = new TObjectIntHashMap<>();
-        TObjectIntMap<BPMNNode> targetCount = new TObjectIntHashMap<>();
-
-        for (BpmnToken token : marking) {
-            BPMNNode source = token.getSourceNode();
-
-            ExecutableBpmnNode executableSource = executableNodeFactory.create(source);
-            int localSourceIndex = sourceCount.adjustOrPutValue(source, 1, 1);
-            int sourceTimesFired = (int) Math.ceil(1.0 * tokensProduced.get(source) / executableSource.getProducesTokensCount());
-            int sourceFiringIndex = (int) Math.ceil(1.0 * localSourceIndex / executableSource.getProducesTokensCount());
-            int sourceIndex = basePath.getTimesFired(source) - sourceTimesFired + sourceFiringIndex;
-
-            BPMNNode target = token.getSinkNode();
-            ExecutableBpmnNode executableTarget = executableNodeFactory.create(target);
-            int localTargetIndex = targetCount.adjustOrPutValue(target, 1, 1);
-            int firingTargetIndex = (int) Math.ceil(1.0 * localTargetIndex / executableTarget.getConsumesTokensCount());
-            int targetIndex = basePath.getTimesFired(target) + firingTargetIndex;
-            try {
-                newPath.connect(source, sourceIndex,
-                        target, targetIndex);
-            } catch (PartialOrderLoopNotAllowedException e) {
-                throw new RuntimeException("This should not happen because we are merging repetitive partial orders",
-                        e);
-            }
-        }
-        return newPath;
-
     }
 
     private void addNextSample(Sampler<IntermediatePathOption> sampler, ReachabilityGraph rg,
@@ -216,6 +153,10 @@ public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements S
 
         public State getCurrentState() {
             return currentState;
+        }
+
+        public BpmnMarking getCurrentMarking() {
+            return (BpmnMarking) getCurrentState().getIdentifier();
         }
     }
 }

@@ -18,12 +18,22 @@ public class DefaultMultisetFactory implements MultisetFactory {
     }
 
     @Override
+    public <E> Multiset<E> getFifo() {
+        return googleMultisetFactory.getFifo();
+    }
+
+    @Override
     public <E> Multiset<E> getDefault(Iterable<E> elements) {
-        return googleMultisetFactory.getDefault(elements);
+        return googleMultisetFactory.getHashed(elements);
     }
 
     @Override
     public <E> Multiset<E> getHashed(Iterable<E> elements) {
         return googleMultisetFactory.getHashed(elements);
+    }
+
+    @Override
+    public <E> Multiset<E> getFifo(Iterable<E> elements) {
+        return googleMultisetFactory.getFifo(elements);
     }
 }

@@ -13,6 +13,8 @@ import org.processmining.sccwbpmnnpos.models.execution.Marking;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 
 public class StochasticReachabilityGraphStaticAnalyzerImpl<M extends Marking<?>> implements StochasticReachabilityGraphStaticAnalyzer<M> {
@@ -30,7 +32,7 @@ public class StochasticReachabilityGraphStaticAnalyzerImpl<M extends Marking<?>>
         Map<M, Probability> reachabilityProbabilities = getReachabilityProbabilities(rg);
 
         return new StochasticReachabilityGraphStaticAnalysisDTO<>(rg, initialState, deadlockMarkings,
-                markingsWithNoOptionToComplete, reachabilityProbabilities);
+                markingsWithNoOptionToComplete, reachabilityProbabilities, clazz);
     }
 
     public Map<M, Probability> getReachabilityProbabilities(ReachabilityGraph rg) {
@@ -40,8 +42,8 @@ public class StochasticReachabilityGraphStaticAnalyzerImpl<M extends Marking<?>>
             probabilityMap.put(finalMarking, Probability.ONE);
         }
         ArrayList<M> ascendants = new ArrayList<>(ReachabilityGraphUtils.getAscendants(rg, finalMarkings, clazz));
-        TObjectIntMap<M> ascendantsIndex = new TObjectIntHashMap<>();
-        int i = 1;
+        TObjectIntMap<M> ascendantsIndex = new TObjectIntHashMap<>(10, 0.5F, -1);
+        int i = 0;
         for (M ascendant : ascendants) {
             ascendantsIndex.put(ascendant, i++);
         }
@@ -50,29 +52,35 @@ public class StochasticReachabilityGraphStaticAnalyzerImpl<M extends Marking<?>>
         SparseDoubleMatrix1D b = new SparseDoubleMatrix1D(matrixSize);
         for (M item : ascendants) {
             int itemIndex = ascendantsIndex.get(item);
-            connectivityMatrix.setQuick(itemIndex - 1, itemIndex - 1, 1);
+            connectivityMatrix.setQuick(itemIndex, itemIndex, 1);
             Collection<Transition> transitions = rg.getOutEdges(rg.getNode(item));
             for (Transition transition : transitions) {
                 M target = clazz.cast(transition.getTarget().getIdentifier());
                 StochasticObject so = (StochasticObject) (transition.getIdentifier());
                 Probability probability = probabilityMap.get(target);
                 if (Objects.nonNull(probability)) {
-                    b.setQuick(itemIndex - 1, b.getQuick(itemIndex - 1) + (so.getProbability().multiply(probability)).doubleValue());
+                    b.setQuick(itemIndex, b.getQuick(itemIndex) + (so.getProbability().multiply(probability)).doubleValue());
                     continue;
                 }
                 int targetIndex = ascendantsIndex.get(target);
                 if (ascendantsIndex.getNoEntryValue() == targetIndex) {
                     continue;
                 }
-                double previousValue = connectivityMatrix.getQuick(itemIndex - 1, targetIndex - 1);
-                connectivityMatrix.setQuick(itemIndex - 1, targetIndex - 1, previousValue - so.getProbability().doubleValue());
+                double previousValue = connectivityMatrix.getQuick(itemIndex, targetIndex);
+                connectivityMatrix.setQuick(itemIndex, targetIndex, previousValue - so.getProbability().doubleValue());
             }
         }
         Algebra algebra = new Algebra();
         DoubleMatrix1D result = algebra.mult(algebra.inverse(connectivityMatrix), b);
         for (i = 0; i < matrixSize; i++) {
             M item = ascendants.get(i);
-            Probability probability = Probability.of(result.get(i));
+            Probability probability;
+            try {
+                 probability = Probability.of(new BigDecimal(result.get(i), MathContext.DECIMAL64));
+            } catch (RuntimeException re) {
+                System.err.println(re);
+                throw re;
+            }
             probabilityMap.put(item, probability);
         }
         return probabilityMap;

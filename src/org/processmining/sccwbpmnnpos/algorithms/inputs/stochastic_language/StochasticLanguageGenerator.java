@@ -10,9 +10,11 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespa
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path.StochasticBpmnPORG2StochasticPathLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.GraphSamplingType;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguage;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
@@ -37,7 +39,8 @@ public interface StochasticLanguageGenerator {
         StochasticBpmnPORG2StochasticTraceLanguageConverter graph2POTrace =
                 StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, samplingStrategy, stopper);
 
-        return new StochasticLanguageGeneratorImpl(log2Trace, sbpmn2Graph, graph2POPath, graph2POTrace);
+        return new StochasticLanguageGeneratorImpl(log2Trace, sbpmn2Graph, graph2POPath, graph2POTrace,
+                StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class));
     }
 
     static StochasticLanguageGenerator getInstance(XEventClassifier defaultClassifier, GraphSamplingType samplingStrategy, StochasticLanguageGeneratorStopper stopper) {

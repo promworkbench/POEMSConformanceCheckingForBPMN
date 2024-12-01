@@ -1,5 +1,8 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.total;
 
+import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.plugins.graphviz.dot.DotNode;
+
 import java.util.*;
 
 public class ArrayTotallyOrderedSet<ELEMENT> implements TotallyOrderedSet<ELEMENT> {
@@ -61,7 +64,7 @@ public class ArrayTotallyOrderedSet<ELEMENT> implements TotallyOrderedSet<ELEMEN
     }
 
     @Override
-    public Collection<ELEMENT> getAlphabet() {
+    public Set<ELEMENT> getAlphabet() {
         return new HashSet<>(elements);
     }
 
@@ -184,5 +187,21 @@ public class ArrayTotallyOrderedSet<ELEMENT> implements TotallyOrderedSet<ELEMEN
     @Override
     public int getNumberOfConnections() {
         return size() - 1;
+    }
+
+    @Override
+    public Dot toGraphViz() {
+        Dot dot = new Dot();
+        dot.setDirection(Dot.GraphDirection.leftRight);
+        if (size() == 0) {
+            return dot;
+        }
+        DotNode prevNode = dot.addNode(elements.get(0).toString());
+        for(int i = 1; i < size(); i++) {
+            DotNode currentNode = dot.addNode(elements.get(i).toString());
+            dot.addEdge(prevNode, currentNode);
+            prevNode = currentNode;
+        }
+        return dot;
     }
 }

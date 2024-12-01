@@ -23,7 +23,7 @@ public class StochasticTraceTOLanguageConverterImpl<A extends Activity, T extend
     public StochasticLanguage<TotalOrder> toEMSC24(StochasticTOTraceLanguage<A, T> traceLanguage,
                                                    Activity2IndexKey activity2IndexKey) {
         ArrayList<int[]> traces = new ArrayList<>();
-        double[] probabilities = new double[traceLanguage.getSize()];
+        double[] probabilities = new double[traceLanguage.size()];
 
         int i = 0;
         for (StochasticLanguageEntry<A, T> entry : traceLanguage) {

@@ -49,7 +49,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest {
                         markingFactory, markingUtils));
         CartesianProductCalculator cartesianProductCalculator = new NestedLoopsCartesianProductCalculator();
         this.bpmnReachabilityGraphCreator =
-                new Bpmn2POReachabilityGraphConverterImpl(executableNodeFactory, markingFactory,
+                new Bpmn2POReachabilityGraphConverterImpl(executableNodeFactory, markingUtils,
                         cartesianProductCalculator);
     }
 

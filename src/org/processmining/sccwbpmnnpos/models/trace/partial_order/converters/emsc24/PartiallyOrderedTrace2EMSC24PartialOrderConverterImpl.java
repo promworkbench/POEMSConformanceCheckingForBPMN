@@ -14,7 +14,7 @@ public class PartiallyOrderedTrace2EMSC24PartialOrderConverterImpl<T extends Act
         int size = poTrace.size();
         int[] newPoTrace = new int[1 + size * 2 + poTrace.getNumberOfConnections()];
         newPoTrace[0] = size;
-        TObjectIntMap<Event<T>> index = new TObjectIntHashMap<>();
+        TObjectIntMap<Event<T>> index = new TObjectIntHashMap<>(10, 0.5F, -1);
         int nodeIndex = 1;
         int edgeIndex = 1 + 2 * size;
         for (Event<T> event : poTrace.getPartiallyOrderedSet()) {

@@ -5,6 +5,7 @@ import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
+import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
@@ -49,7 +50,6 @@ public class StochasticBpmnReachabilityGraphPlugin {
         diagramBuilder = new StochasticBPMNDiagramBuilderImpl();
     }
 
-
     /**
      * The plug-in variant that runs in any context and requires a parameters.
      *
@@ -60,7 +60,7 @@ public class StochasticBpmnReachabilityGraphPlugin {
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
+    public ReachabilityGraph run(PluginContext context, StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
         return converter.convert(diagram);
     }
 
@@ -74,7 +74,7 @@ public class StochasticBpmnReachabilityGraphPlugin {
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, StochasticBpmn bpmn) throws BpmnNoOptionToCompleteException,
+    public ReachabilityGraph run(PluginContext context, StochasticBpmn bpmn) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
         return converter.convert(diagramBuilder.build(bpmn));
     }

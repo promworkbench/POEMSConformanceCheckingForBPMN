@@ -1,6 +1,7 @@
 package org.processmining.sccwbpmnnpos.models.bpmn.execution.path;
 
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
+import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.PartiallyOrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet;
@@ -20,6 +21,11 @@ public class BpmnPartiallyOrderedPathImpl implements BpmnPartiallyOrderedPath {
     @Override
     public Set<BPMNNode> getAlphabet() {
         return path.getAlphabet();
+    }
+
+    @Override
+    public Dot toGraphViz() {
+        return path.toGraphViz();
     }
 
     @Override

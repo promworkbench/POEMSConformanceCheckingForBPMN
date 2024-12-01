@@ -7,6 +7,7 @@ import org.processmining.sccwbpmnnpos.algorithms.utils.directedGraph.DirectedGra
 import org.processmining.sccwbpmnnpos.models.execution.Marking;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -86,7 +87,7 @@ public class ReachabilityGraphUtils {
             for (Transition transition : transitions) {
                 State toState = transition.getTarget();
                 StochasticObject so = (StochasticObject) (transition.getIdentifier());
-                sb.append(String.format("\"%s\" -> \"%s\" [label=\"%s\"];\n", state.getIdentifier().toString(), toState.getIdentifier().toString(), so.getProbability().toString()));
+                sb.append(String.format("\"%s\" -> \"%s\" [label=\"%s\"];\n", state.getIdentifier().toString(), toState.getIdentifier().toString(), so.getProbability().getValue().setScale(5, RoundingMode.DOWN).toString()));
             }
         }
         sb.append("}");

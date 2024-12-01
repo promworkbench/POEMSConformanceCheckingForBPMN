@@ -2,6 +2,9 @@ package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.plugins.graphviz.dot.DotEdge;
+import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.*;
@@ -304,7 +307,7 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
 //        sb.append("]");
 //        sb.append("}");
 //        return sb.toString();
-        return toGraphVizString();
+        return toGraphViz().toString();
     }
 
     @Override
@@ -312,21 +315,27 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
         return predecessors.stream().mapToInt(Set::size).sum();
     }
 
-    public String toGraphVizString() {
-        StringBuilder buildGViz = new StringBuilder("digraph G {\n");
+    public Dot toGraphViz() {
+        Dot dot = new Dot();
+        dot.setDirection(Dot.GraphDirection.bottomTop);
+        Map<Integer, DotNode> dotNodeMap = new HashMap<>();
+        int i = 0;
+        for (ELEMENT element : elements) {
+            DotNode dotNode = dot.addNode(element.toString());
+            dotNodeMap.put(i++, dotNode);
+        }
 
-        for (int i = 0; i < predecessors.size(); i++) {
+        for (i = 0; i < predecessors.size(); i++) {
+            DotNode successorNode = dotNodeMap.get(i);
             Set<Integer> iPredecessors = predecessors.get(i);
             for (Integer predecessor : iPredecessors) {
-                buildGViz.append("\"" + getElement(predecessor) + "\" -> \"" + getElement(i) + "\";\n");
-            }
-            if (iPredecessors.isEmpty() && !hasSuccessors(i)) {
-                buildGViz.append("\"" + getElement(i) + "\";\n");
+                DotNode predecessorNode = dotNodeMap.get(predecessor);
+                DotEdge dotEdge = dot.addEdge(predecessorNode, successorNode);
+                dotEdge.setOption("dir", "none");
             }
         }
 
-        buildGViz.append("}");
-        return buildGViz.toString();
+        return dot;
     }
 
     private boolean hasSuccessors(int idx) {

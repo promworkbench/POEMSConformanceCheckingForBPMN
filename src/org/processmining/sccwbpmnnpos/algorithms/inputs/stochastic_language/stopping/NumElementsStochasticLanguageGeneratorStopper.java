@@ -11,6 +11,6 @@ public class NumElementsStochasticLanguageGeneratorStopper implements Stochastic
 
     @Override
     public <A> boolean shouldStop(StochasticLanguage<?, ?> stochasticLanguage) {
-        return stochasticLanguage.getSize() >= numElementsRequired;
+        return stochasticLanguage.size() >= numElementsRequired;
     }
 }

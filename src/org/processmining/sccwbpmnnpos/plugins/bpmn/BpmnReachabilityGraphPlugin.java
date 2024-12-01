@@ -6,6 +6,7 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
+import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.TransitionSystem;
 import org.processmining.plugins.bpmn.Bpmn;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2POReachabilityGraphConverter;
@@ -37,7 +38,7 @@ public class BpmnReachabilityGraphPlugin {
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, BPMNDiagram diagram) throws BpmnNoOptionToCompleteException,
+    public ReachabilityGraph run(PluginContext context, BPMNDiagram diagram) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
         return converter.convert(diagram);
     }
@@ -52,7 +53,7 @@ public class BpmnReachabilityGraphPlugin {
     @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
-    public TransitionSystem run(PluginContext context, Bpmn bpmn) throws BpmnNoOptionToCompleteException,
+    public ReachabilityGraph run(PluginContext context, Bpmn bpmn) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
         return converter.convert(diagramBuilder.build(bpmn));
     }

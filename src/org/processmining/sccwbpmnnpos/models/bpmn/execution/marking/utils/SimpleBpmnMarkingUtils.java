@@ -81,4 +81,9 @@ public class SimpleBpmnMarkingUtils implements BpmnMarkingUtils {
     public int isContainedTimes(BpmnMarking superSet, BpmnMarking subSet) {
         return multisetUtils.isContainedTimes(superSet, subSet);
     }
+
+    @Override
+    public BpmnMarking copy(BpmnMarking marking) {
+        return markingFactory.create(marking.getModel(), marking);
+    }
 }

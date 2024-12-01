@@ -8,6 +8,9 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespa
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path.StochasticBpmnPORG2StochasticPathLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.StochasticReachabilityGraphStaticAnalysis;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.StochasticReachabilityGraphStaticAnalyzer;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguage;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
@@ -18,24 +21,28 @@ public class StochasticLanguageGeneratorImpl implements StochasticLanguageGenera
     private final StochasticBpmn2POReachabilityGraphConverter sbpmn2Graph;
     private final StochasticBpmnPORG2StochasticPathLanguageConverter rg2POPath;
     private final StochasticBpmnPORG2StochasticTraceLanguageConverter rg2POTrace;
+    private final StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> analyzer;
 
-    public StochasticLanguageGeneratorImpl(Xlog2StochasticTraceLanguageConverter log2Trace, StochasticBpmn2POReachabilityGraphConverter sbpmn2Graph, StochasticBpmnPORG2StochasticPathLanguageConverter rg2POPath, StochasticBpmnPORG2StochasticTraceLanguageConverter rg2POTrace) {
+    public StochasticLanguageGeneratorImpl(Xlog2StochasticTraceLanguageConverter log2Trace, StochasticBpmn2POReachabilityGraphConverter sbpmn2Graph, StochasticBpmnPORG2StochasticPathLanguageConverter rg2POPath, StochasticBpmnPORG2StochasticTraceLanguageConverter rg2POTrace, StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> analyzer) {
         this.log2Trace = log2Trace;
         this.sbpmn2Graph = sbpmn2Graph;
         this.rg2POPath = rg2POPath;
         this.rg2POTrace = rg2POTrace;
+        this.analyzer = analyzer;
     }
 
     @Override
     public BpmnStochasticPOPathLanguage poPath(StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
         ReachabilityGraph graph = sbpmn2Graph.convert(diagram);
-        return poPath(graph);
+        StochasticReachabilityGraphStaticAnalysis<BpmnMarking> graphAnalysis = analyzer.analyze(graph);
+        return poPath(graphAnalysis.getFixedReachabilityGraph());
     }
 
     @Override
     public BpmnStochasticPOTraceLanguage poTrace(StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
         ReachabilityGraph graph = sbpmn2Graph.convert(diagram);
-        return poTrace(graph);
+        StochasticReachabilityGraphStaticAnalysis<BpmnMarking> graphAnalysis = analyzer.analyze(graph);
+        return poTrace(graphAnalysis.getFixedReachabilityGraph());
     }
 
     @Override

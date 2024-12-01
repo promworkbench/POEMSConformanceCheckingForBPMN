@@ -178,4 +178,21 @@ public class GoogleMultisetAdapter<E> implements Multiset<E> {
     public String toString() {
         return elements.toString();
     }
+
+    @Override
+    public String toStringNewLines() {
+        if (isEmpty()) {
+            return toString();
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Entry<E> eEntry : entrySet()) {
+            sb.append(eEntry.getElement());
+            if (eEntry.getCount() > 1) {
+                sb.append(" x ");
+                sb.append(eEntry.getCount());
+            }
+            sb.append("\n");
+        }
+        return sb.substring(0, sb.length() - 1);
+    }
 }

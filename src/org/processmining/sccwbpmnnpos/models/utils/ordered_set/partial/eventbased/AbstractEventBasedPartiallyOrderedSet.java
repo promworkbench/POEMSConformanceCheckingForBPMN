@@ -2,6 +2,7 @@ package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbas
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.ArrayPartiallyOrderedSet;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.PartiallyOrderedSet;
@@ -15,7 +16,7 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
 
     public AbstractEventBasedPartiallyOrderedSet() {
         po = new ArrayPartiallyOrderedSet<>();
-        lastFiredIndex = new TObjectIntHashMap<>();
+        lastFiredIndex = new TObjectIntHashMap<>(10, 0.5F, -1);
     }
 
     @Override
@@ -182,5 +183,10 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
     @Override
     public int getNumberOfConnections() {
         return po.getNumberOfConnections();
+    }
+
+    @Override
+    public Dot toGraphViz() {
+        return po.toGraphViz();
     }
 }

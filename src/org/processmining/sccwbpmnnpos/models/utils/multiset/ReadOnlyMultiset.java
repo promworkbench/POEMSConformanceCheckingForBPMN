@@ -50,4 +50,6 @@ public interface ReadOnlyMultiset<E> extends Iterable<E> {
 
         String toString();
     }
+
+    String toStringNewLines();
 }

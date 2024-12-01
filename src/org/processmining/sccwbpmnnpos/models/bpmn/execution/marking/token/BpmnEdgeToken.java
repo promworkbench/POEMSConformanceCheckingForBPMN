@@ -58,9 +58,19 @@ public class BpmnEdgeToken implements BpmnToken {
 //        }
 
         String s = String.valueOf(getSourceNode().hashCode());
-        String sIdx = s.substring(s.length() - 3);
+        String sIdx;
+        if (s.length() < 3) {
+            sIdx = s;
+        } else {
+            sIdx = s.substring(s.length() - 3);
+        }
         String t = String.valueOf(getSinkNode().hashCode());
-        String tIdx = t.substring(s.length() - 3);
+        String tIdx;
+        if (t.length() < 3) {
+            tIdx = t;
+        } else {
+            tIdx = t.substring(t.length() - 3);
+        }
         return sIdx + " " + getSourceNode()  + " < " + tIdx + " " + getSinkNode();
     }
 }

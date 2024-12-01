@@ -25,4 +25,6 @@ public interface BpmnMarkingUtils {
     boolean isSubset(BpmnMarking superSet, BpmnMarking subSet);
 
     int isContainedTimes(BpmnMarking superSet, BpmnMarking subSet);
+
+    BpmnMarking copy(BpmnMarking marking);
 }

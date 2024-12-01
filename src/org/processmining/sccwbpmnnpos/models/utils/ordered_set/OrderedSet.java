@@ -1,9 +1,11 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set;
 
+import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.sccwbpmnnpos.models.utils.AlphabetCollection;
+
 import java.util.Collection;
 
-public interface OrderedSet<ELEMENT> extends Collection<ELEMENT> {
-    Collection<ELEMENT> getAlphabet();
+public interface OrderedSet<ELEMENT> extends AlphabetCollection<ELEMENT> {
 
     Collection<ELEMENT> getAscendants(ELEMENT element);
 

@@ -1,12 +1,13 @@
 package org.processmining.sccwbpmnnpos.models.stochastic.language;
 
 
+import org.processmining.sccwbpmnnpos.models.utils.AlphabetCollection;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
 import java.util.Collection;
 
-public class StochasticLanguageEntry<L, E extends Collection<L>> implements Comparable<StochasticLanguageEntry<L, E>>, StochasticObject {
+public class StochasticLanguageEntry<L, E extends AlphabetCollection<L>> implements Comparable<StochasticLanguageEntry<L, E>>, StochasticObject {
     private final E element;
     private final Probability probability;
 

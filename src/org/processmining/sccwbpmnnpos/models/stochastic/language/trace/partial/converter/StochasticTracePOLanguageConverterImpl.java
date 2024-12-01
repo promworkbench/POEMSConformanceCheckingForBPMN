@@ -1,7 +1,6 @@
 package org.processmining.sccwbpmnnpos.models.stochastic.language.trace.partial.converter;
 
 import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.Activity2IndexKey;
-import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.PartialOrder;
 import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.PartialOrderCertain;
 import org.processmining.earthmoversstochasticconformancechecking.stochasticlanguage.StochasticLanguage;
 import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguageEntry;
@@ -24,7 +23,7 @@ public class StochasticTracePOLanguageConverterImpl<A extends Activity, T extend
     public StochasticLanguage<PartialOrderCertain> toEMSC24(StochasticPOTraceLanguage<A, T> traceLanguage,
                                                             Activity2IndexKey activity2IndexKey) {
         ArrayList<int[]> traces = new ArrayList<>();
-        double[] probabilities = new double[traceLanguage.getSize()];
+        double[] probabilities = new double[traceLanguage.size()];
 
         int i = 0;
         for (StochasticLanguageEntry<A, T> entry : traceLanguage) {

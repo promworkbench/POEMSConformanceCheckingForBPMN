@@ -1,6 +1,7 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic;
 
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
+import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.sccwbpmnnpos.models.execution.Marking;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 
@@ -18,4 +19,6 @@ public interface StochasticReachabilityGraphStaticAnalysis<M extends Marking<?>>
     Probability getProbabilityToComplete(M marking);
 
     ReachabilityGraph getFixedReachabilityGraph();
+
+    Dot toGraphViz();
 }

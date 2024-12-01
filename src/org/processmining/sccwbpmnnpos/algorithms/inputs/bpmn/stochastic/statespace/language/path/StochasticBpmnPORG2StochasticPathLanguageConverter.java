@@ -1,6 +1,7 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path;
 
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.path.BpmnPOReachabilityGraphPathConstructor;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.GraphSamplingType;
@@ -16,7 +17,8 @@ public interface StochasticBpmnPORG2StochasticPathLanguageConverter {
     static StochasticBpmnPORG2StochasticPathLanguageConverter getInstance(GraphSamplingType type,
                                                                           StochasticLanguageGeneratorStopper stopper,
                                                                           ExecutableStochasticBpmnNodeFactory nodeFactory) {
-        return new StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy.getInstance(type), stopper, nodeFactory);
+        BpmnPOReachabilityGraphPathConstructor pathConstructor = BpmnPOReachabilityGraphPathConstructor.getInstance(nodeFactory);
+        return new StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy.getInstance(type), stopper, pathConstructor);
     }
 
     static StochasticBpmnPORG2StochasticPathLanguageConverter getInstance() {

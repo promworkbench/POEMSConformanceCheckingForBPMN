@@ -1,6 +1,9 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.plugins.graphviz.dot.DotEdge;
+import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 
 import java.util.*;
@@ -198,5 +201,26 @@ public class MapPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<ELEM
                 return nextElement;
             }
         };
+    }
+
+    public Dot toGraphViz() {
+        Dot dot = new Dot();
+        dot.setDirection(Dot.GraphDirection.bottomTop);
+        Map<ELEMENT, DotNode> dotNodeMap = new HashMap<>();
+        for (ELEMENT element : map.keySet()) {
+            DotNode dotNode = dot.addNode(element.toString());
+            dotNodeMap.put(element, dotNode);
+        }
+
+        for (Map.Entry<ELEMENT, Set<ELEMENT>> elementSetEntry : map.entrySet()) {
+            ELEMENT successor = elementSetEntry.getKey();
+            DotNode successorNode = dotNodeMap.get(successor);
+            for (ELEMENT predecessor : elementSetEntry.getValue()) {
+                DotNode predecessorNode = dotNodeMap.get(predecessor);
+                DotEdge dotEdge = dot.addEdge(predecessorNode, successorNode);
+                dotEdge.setOption("dir", "none");
+            }
+        }
+        return dot;
     }
 }

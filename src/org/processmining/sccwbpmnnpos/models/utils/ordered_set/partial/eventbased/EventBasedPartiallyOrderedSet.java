@@ -1,15 +1,12 @@
 package org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased;
 
+import org.processmining.sccwbpmnnpos.models.utils.AlphabetCollection;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.PartiallyOrderedSet;
 
-import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 
-public interface EventBasedPartiallyOrderedSet<I> extends Collection<I> {
-    Set<I> getAlphabet();
-
+public interface EventBasedPartiallyOrderedSet<I> extends AlphabetCollection<I> {
     Event<I> fire(I item);
 
     int getTimesFired(I item);
@@ -22,7 +19,9 @@ public interface EventBasedPartiallyOrderedSet<I> extends Collection<I> {
 
     void connect(Event<I> predecessor, Event<I> successor) throws PartialOrderLoopNotAllowedException;
 
-    void connect(I predecessor, int predecessorIdx, I successor, int successorIdx) throws PartialOrderLoopNotAllowedException;;
+    void connect(I predecessor, int predecessorIdx, I successor, int successorIdx) throws PartialOrderLoopNotAllowedException;
+
+    ;
 
     void connectLast(I predecessor, I successor) throws PartialOrderLoopNotAllowedException;
 

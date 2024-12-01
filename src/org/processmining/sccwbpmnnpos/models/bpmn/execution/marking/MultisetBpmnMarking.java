@@ -1,5 +1,7 @@
 package org.processmining.sccwbpmnnpos.models.bpmn.execution.marking;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.bpmn.elements.Event;
@@ -11,12 +13,20 @@ import java.util.stream.Collectors;
 
 public class MultisetBpmnMarking implements BpmnMarking {
     private final Multiset<BpmnToken> tokens;
+    private final TObjectIntMap<BPMNNode> nodeProduced;
+    private final TObjectIntMap<BPMNNode> nodeConsumed;
     private final BPMNDiagram model;
     private final transient int hash;
 
     public MultisetBpmnMarking(final BPMNDiagram model, final Multiset<BpmnToken> tokens) {
         this.tokens = tokens;
         this.model = model;
+        this.nodeProduced = new TObjectIntHashMap<>(tokens.size());
+        this.nodeConsumed = new TObjectIntHashMap<>();
+        for (BpmnToken token : tokens) {
+            this.nodeProduced.adjustOrPutValue(token.getSourceNode(), 1, 1);
+            this.nodeConsumed.adjustOrPutValue(token.getSinkNode(), 1, 1);
+        }
         hash = this.tokens.hashCode();
     }
 
@@ -188,5 +198,20 @@ public class MultisetBpmnMarking implements BpmnMarking {
     @Override
     public String toString() {
         return tokens.toString();
+    }
+
+    @Override
+    public String toStringNewLines() {
+        return tokens.toStringNewLines();
+    }
+
+    @Override
+    public int nodeProducedTokensCount(BPMNNode sourceNode) {
+        return nodeProduced.get(sourceNode);
+    }
+
+    @Override
+    public int nodeConsumedTokensCount(BPMNNode sinkNode) {
+        return nodeConsumed.get(sinkNode);
     }
 }

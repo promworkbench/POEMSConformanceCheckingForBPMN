@@ -1,5 +1,7 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
@@ -11,8 +13,8 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagra
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.ExecutableBpmnDiagramImpl;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.firable.alternatives.BpmnNodeFiringOption;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
-import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.factory.BpmnMarkingFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.token.BpmnToken;
+import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.utils.BpmnMarkingUtils;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.ExecutableBpmnNode;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.exceptions.BpmnNodeNotEnabledException;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.node.factory.ExecutableBpmnNodeFactory;
@@ -30,14 +32,13 @@ import java.util.stream.Collectors;
 public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilityGraphConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Bpmn2POReachabilityGraphConverterImpl.class);
     private final ExecutableBpmnNodeFactory nodeFactory;
-    private final BpmnMarkingFactory markingFactory;
     private final CartesianProductCalculator cartesianProductCalculator;
+    private final BpmnMarkingUtils markingUtils;
 
-    public Bpmn2POReachabilityGraphConverterImpl(ExecutableBpmnNodeFactory nodeFactory,
-                                                 BpmnMarkingFactory markingFactory,
-                                                 CartesianProductCalculator cartesianProductCalculator) {
+    public Bpmn2POReachabilityGraphConverterImpl(ExecutableBpmnNodeFactory nodeFactory, BpmnMarkingUtils markingUtils
+            , CartesianProductCalculator cartesianProductCalculator) {
         this.nodeFactory = nodeFactory;
-        this.markingFactory = markingFactory;
+        this.markingUtils = markingUtils;
         this.cartesianProductCalculator = cartesianProductCalculator;
     }
 
@@ -51,8 +52,8 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
 
         BpmnStateChange initialMarking = getInitialMarking(executableDiagram);
         reachabilityGraph.addState(initialMarking.getTargetMarking());
-        BpmnMarking marking2 = executeUntilThereAreOnlyChoices(executableDiagram,
-                initialMarking.getTargetMarking(), initialMarking.getEdge().getPath());
+        BpmnMarking marking2 = executeUntilThereAreOnlyChoices(executableDiagram, initialMarking.getTargetMarking(),
+                initialMarking.getEdge().getPath());
         reachabilityGraph.addState(marking2);
         reachabilityGraph.addTransition(initialMarking.getTargetMarking(), marking2, initialMarking.getEdge());
 
@@ -87,6 +88,9 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             markings = tmp;
         } while (!markings.isEmpty());
 
+        for (State node : reachabilityGraph.getNodes()) {
+            node.getAttributeMap().put("ProM_Vis_attr_showLabel", true);
+        }
         LOGGER.debug("Reachability Graph for BPMN Constructed");
         return reachabilityGraph;
     }
@@ -95,13 +99,13 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         final BpmnPartiallyOrderedPath path = newPath();
         BpmnMarking resultMarking = executeUntilThereAreOnlyChoices(diagram, marking, path);
         if (!Objects.equals(resultMarking, marking)) {
-            return Collections.singleton(new BpmnStateChange(resultMarking, getEdge(Collections.emptyList(), path)));
+            return Collections.singleton(new BpmnStateChange(resultMarking, getEdge(Collections.emptyList(), path, 1,
+                    1)));
         }
         return executeNextChoiceBatch(diagram, marking);
     }
 
-    private Set<BpmnStateChange> executeNextChoiceBatch(ExecutableBpmnDiagramImpl diagram,
-                                                        BpmnMarking marking) {
+    private Set<BpmnStateChange> executeNextChoiceBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
         Set<BpmnStateChange> resultMarkings = executeNextChoice(diagram, marking);
         if (resultMarkings.size() == 1 && Objects.equals(resultMarkings.iterator().next().getTargetMarking(),
                 marking)) {
@@ -114,8 +118,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 newMarking = executeUntilThereAreOnlyChoices(diagram, choiceMarking.getTargetMarking(),
                         choiceMarking.getEdge().getPath());
             } catch (BpmnNoOptionToCompleteException e) {
-                finalMarkings.add(new BpmnStateChange(e.reachedMarking, choiceMarking.getEdge(),
-                        false));
+                finalMarkings.add(new BpmnStateChange(e.reachedMarking, choiceMarking.getEdge(), false));
             }
             finalMarkings.add(new BpmnStateChange(newMarking, choiceMarking.getEdge()));
         }
@@ -146,8 +149,8 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
     private Set<BpmnStateChange> executeNextChoice(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
         Collection<ExecutableBpmnNode> nodes = diagram.getEnabledNodes(marking);
         if (nodes.isEmpty()) {
-            return Collections.singleton(new BpmnStateChange(marking,
-                    getEdge(Collections.emptyList(), newPath())));
+            return Collections.singleton(new BpmnStateChange(marking, getEdge(Collections.emptyList(), newPath(), 1,
+                    1)));
         }
         List<Collection<BpmnNodeFiringOption>> options = new LinkedList<>();
         for (ExecutableBpmnNode node : nodes) {
@@ -157,10 +160,22 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             }
         }
         List<List<BpmnNodeFiringOption>> cartesianProduct = cartesianProductCalculator.calculate(options);
+//        Map<BpmnMarking, List<BpmnNodeFiringOption>> uniqueCombinations = new HashMap<>();
+//        TObjectIntMap<BpmnMarking> combinationCount = new TObjectIntHashMap<>();
+//        for (List<BpmnNodeFiringOption> combination : cartesianProduct) {
+//            BpmnMarking combinationMarking = markingUtils.emptyMarking(diagram.getDiagram());
+//            for (BpmnNodeFiringOption firingOption : combination) {
+//                combinationMarking = markingUtils.sum(combinationMarking, firingOption.getMarking());
+//            }
+//            uniqueCombinations.computeIfAbsent(combinationMarking,
+//                    k -> combination);
+//            combinationCount.adjustOrPutValue(combinationMarking, 1, 1);
+//        }
+
         Set<BpmnStateChange> result = new HashSet<>();
         for (List<BpmnNodeFiringOption> combination : cartesianProduct) {
             BpmnPartiallyOrderedPath path = newPath();
-            BpmnMarking currentMarking = markingFactory.create(marking.getModel(), marking);
+            BpmnMarking currentMarking = markingUtils.copy(marking);
             BpmnMarking resultMarking;
             try {
                 resultMarking = executeOnce(combination, currentMarking, path);
@@ -171,7 +186,10 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 // This should not happen it makes no sense gates to point to themselves.
                 throw new RuntimeException(e);
             }
-            result.add(new BpmnStateChange(resultMarking, getEdge(combination, path)));
+//            int timesFired = combinationCount.get(combination.getKey());
+            int timesFired = 1;
+            result.add(new BpmnStateChange(resultMarking, getEdge(combination, path, timesFired,
+                    cartesianProduct.size())));
         }
         return result;
     }
@@ -198,12 +216,12 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 nodes.stream().flatMap(n -> n.getFiringOptions().stream()).collect(Collectors.toList());
         BpmnMarking initialMarking = null;
         try {
-            initialMarking = executeOnce(options, markingFactory.getEmpty(diagram.getDiagram()), path);
+            initialMarking = executeOnce(options, markingUtils.emptyMarking(diagram.getDiagram()), path);
         } catch (BpmnNodeNotEnabledException e) {
             // This should not happen because we start with enabled nodes.
             throw new RuntimeException(e);
         }
-        return new BpmnStateChange(initialMarking, getEdge(options, path));
+        return new BpmnStateChange(initialMarking, getEdge(options, path, 1, 1));
     }
 
     private BpmnMarking executeOnce(Collection<BpmnNodeFiringOption> firingOptions, BpmnMarking marking,
@@ -215,13 +233,20 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             resultMarking = bpmnFiringChange.getResultMarking();
             EventBasedPartiallyOrderedSet.Event<BPMNNode> sinkEvent = path.fire(firingOption.getNode().getNode());
             for (BpmnToken token : bpmnFiringChange.getConsumedMarking()) {
-                int sourceNodeFiringIndex = path.getTimesFired(token.getSourceNode());
-                if (sourceNodeFiringIndex == 0) {
+                BPMNNode sourceNode = token.getSourceNode();
+                ExecutableBpmnNode sourceFiringNode = nodeFactory.create(sourceNode);
+                int sourceNodeFiringIndex;
+                if (sourceFiringNode.getProducesTokensCount() > 1) {
+                    // Independent
+                    sourceNodeFiringIndex = path.getTimesFired(sourceNode) - resultMarking.count(token);
+                } else {
+                    sourceNodeFiringIndex = path.getTimesFired(sourceNode) - resultMarking.nodeProducedTokensCount(sourceNode);
+                }
+                if (sourceNodeFiringIndex <= 0) {
                     continue;
                 }
-                EventBasedPartiallyOrderedSet.Event<BPMNNode> sourceEvent =
-                        path.getFiringEvent(token.getSourceNode(),
-                        sourceNodeFiringIndex - resultMarking.count(token));
+                EventBasedPartiallyOrderedSet.Event<BPMNNode> sourceEvent = path.getFiringEvent(sourceNode,
+                        sourceNodeFiringIndex);
                 try {
                     path.connect(sourceEvent, sinkEvent);
                 } catch (PartialOrderLoopNotAllowedException e) {
@@ -234,7 +259,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
     }
 
     protected BpmnReachabilityGraphEdge getEdge(final Collection<BpmnNodeFiringOption> firingOptions,
-                                                BpmnPartiallyOrderedPath path) {
+                                                BpmnPartiallyOrderedPath path, int firedTimes, int numOfOptions) {
         return new BpmnReachabilityGraphEdge(path);
     }
 
