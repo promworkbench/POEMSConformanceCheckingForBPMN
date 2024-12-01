@@ -51,6 +51,6 @@ public class MarkingBpmnNodeFiringOption implements BpmnNodeFiringOption {
 
     @Override
     public String toString() {
-        return node.toString() + ": " + producesMarking;
+        return consumesMarking + " > " + node.toString() + " > " + producesMarking;
     }
 }

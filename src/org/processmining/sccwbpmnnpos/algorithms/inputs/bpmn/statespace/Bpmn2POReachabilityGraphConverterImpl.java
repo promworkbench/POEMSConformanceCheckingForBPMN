@@ -20,6 +20,7 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOr
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOrderedPathImpl;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.exceptions.PartialOrderLoopNotAllowedException;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet;
+import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.EventBasedPartiallyOrderedSet.Event;
 import org.processmining.sccwbpmnnpos.models.utils.ordered_set.partial.eventbased.NonRepetitiveEventBasedPartiallyOrderedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             Set<BpmnMarking> tmp = new HashSet<>();
             for (BpmnMarking marking : markings) {
                 reachabilityGraph.addState(marking);
-                Set<BpmnStateChange> nextMarkings = executeNextBatch(executableDiagram, marking);
+                Collection<BpmnStateChange> nextMarkings = executeNextBatch(executableDiagram, marking);
                 for (BpmnStateChange nextState : nextMarkings) {
                     if (!reachabilityGraph.getStates().contains(nextState.getTargetMarking())) {
                         // Loop detected, don't process the same marking again
@@ -93,7 +94,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         return reachabilityGraph;
     }
 
-    private Set<BpmnStateChange> executeNextBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) throws BpmnNoOptionToCompleteException {
+    private Collection<BpmnStateChange> executeNextBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) throws BpmnNoOptionToCompleteException {
         final BpmnPartiallyOrderedPath path = newPath();
         BpmnMarking resultMarking = executeUntilThereAreOnlyChoices(diagram, marking, path);
         if (!Objects.equals(resultMarking, marking)) {
@@ -103,8 +104,8 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         return executeNextChoiceBatch(diagram, marking);
     }
 
-    private Set<BpmnStateChange> executeNextChoiceBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
-        Set<BpmnStateChange> resultMarkings = executeNextChoice(diagram, marking);
+    private Collection<BpmnStateChange> executeNextChoiceBatch(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
+        Collection<BpmnStateChange> resultMarkings = executeNextChoice(diagram, marking);
         if (resultMarkings.size() == 1 && Objects.equals(resultMarkings.iterator().next().getTargetMarking(),
                 marking)) {
             return resultMarkings;
@@ -144,10 +145,10 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         return executeUntilThereAreOnlyChoices(diagram, nextMarking, path);
     }
 
-    private Set<BpmnStateChange> executeNextChoice(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
+    private List<BpmnStateChange> executeNextChoice(ExecutableBpmnDiagramImpl diagram, BpmnMarking marking) {
         Collection<ExecutableBpmnNode> nodes = diagram.getEnabledNodes(marking);
         if (nodes.isEmpty()) {
-            return Collections.singleton(new BpmnStateChange(marking, getEdge(Collections.emptyList(), newPath(), 1,
+            return Collections.singletonList(new BpmnStateChange(marking, getEdge(Collections.emptyList(), newPath(), 1,
                     1)));
         }
         List<Collection<BpmnNodeFiringOption>> options = new LinkedList<>();
@@ -167,9 +168,20 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
 //            combinationCount.adjustOrPutValue(combinationMarking, 1, 1);
 //        }
 
-        Set<BpmnStateChange> result = new HashSet<>();
+        LinkedList<BpmnStateChange> result = new LinkedList<>();
         for (List<BpmnNodeFiringOption> combination : cartesianProduct) {
+            combination.sort(Comparator.comparing(f -> f.getProducesMarking().iterator().next().getSinkNode()));
             BpmnPartiallyOrderedPath path = newPath();
+            for (BpmnToken token : marking) {
+                Event<BPMNNode> event = path.getEvent(token.getSourceNode());
+                path.fire(event);
+            }
+//            for (BpmnNodeFiringOption firingOption : combination) {
+//                for (BpmnToken token : firingOption.getConsumesMarking()) {
+//                    Event<BPMNNode> event = path.getEvent(token.getSourceNode());
+//                    path.fire(event);
+//                }
+//            }
             BpmnMarking currentMarking = markingUtils.copy(marking);
             BpmnMarking resultMarking;
             try {
@@ -222,7 +234,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             BpmnFiringChange bpmnFiringChange = firingOption.getNode().fireOne(resultMarking, firingOption);
             resultMarking = bpmnFiringChange.getResultMarking();
             EventBasedPartiallyOrderedSet.Event<BPMNNode> sinkEvent = path.fire(firingOption.getNode().getNode());
-            for (BpmnToken token : bpmnFiringChange.getConsumedMarking()) {
+            for (BpmnToken token : firingOption.getConsumesMarking()) {
                 BPMNNode sourceNode = token.getSourceNode();
                 ExecutableBpmnNode sourceFiringNode = nodeFactory.create(sourceNode);
                 int sourceNodeFiringIndex;
@@ -232,7 +244,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 } else {
                     sourceNodeFiringIndex = path.getTimesFired(sourceNode) - resultMarking.nodeProducedTokensCount(sourceNode);
                 }
-                if (sourceNodeFiringIndex <= 0) {
+                if (sourceNodeFiringIndex < 0) {
                     continue;
                 }
                 EventBasedPartiallyOrderedSet.Event<BPMNNode> sourceEvent = path.getFiringEvent(sourceNode,

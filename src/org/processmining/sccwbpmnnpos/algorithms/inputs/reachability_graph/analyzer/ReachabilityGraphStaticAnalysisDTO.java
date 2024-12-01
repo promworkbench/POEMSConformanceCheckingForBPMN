@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic;
+package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.analyzer;
 
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
@@ -6,29 +6,25 @@ import org.processmining.models.graphbased.directed.transitionsystem.Transition;
 import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.sccwbpmnnpos.models.execution.Marking;
-import org.processmining.stochasticbpmn.models.stochastic.Probability;
-import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> implements StochasticReachabilityGraphStaticAnalysis<M> {
+public class ReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> implements ReachabilityGraphStaticAnalysis<M> {
     private final ReachabilityGraph reachabilityGraph;
     private final Set<M> deadLockMarkings;
     private final Set<M> markingsWithoutOptionToComplete;
-    private final Map<M, Probability> markingProbabilityMapping;
     private final M initialMarking;
     private final Class<M> clazz;
 
-    public StochasticReachabilityGraphStaticAnalysisDTO(ReachabilityGraph reachabilityGraph, M initialMarking,
-                                                        Set<M> deadLockMarkings,
-                                                        Set<M> markingsWithoutOptionToComplete,
-                                                        Map<M, Probability> markingProbabilityMapping, Class<M> clazz) {
+    public ReachabilityGraphStaticAnalysisDTO(ReachabilityGraph reachabilityGraph, M initialMarking,
+                                              Set<M> deadLockMarkings,
+                                              Set<M> markingsWithoutOptionToComplete, Class<M> clazz) {
         this.reachabilityGraph = reachabilityGraph;
         this.deadLockMarkings = deadLockMarkings;
         this.markingsWithoutOptionToComplete = markingsWithoutOptionToComplete;
-        this.markingProbabilityMapping = markingProbabilityMapping;
         this.initialMarking = initialMarking;
         this.clazz = clazz;
     }
@@ -46,20 +42,6 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
     @Override
     public Set<M> getMarkingsWithNoOptionToComplete() {
         return markingsWithoutOptionToComplete;
-    }
-
-    @Override
-    public Probability getProbabilityToComplete() {
-        return getProbabilityToComplete(initialMarking);
-    }
-
-    @Override
-    public Probability getProbabilityToComplete(M marking) {
-        Probability probability = markingProbabilityMapping.get(marking);
-        if (Objects.isNull(probability)) {
-            return Probability.ZERO;
-        }
-        return probability;
     }
 
     @Override
@@ -89,15 +71,12 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
     @Override
     public Dot toGraphViz() {
         Dot dot = new Dot();
-        dot.setLabel(String.format("Probability to Complete %s", getProbabilityToComplete()));
+        dot.setLabel(String.format(reachabilityGraph.getLabel()));
         Collection<State> states = getReachabilityGraph().getNodes();
         Map<State, DotNode> stateMap = new HashMap<>();
         for (State state : states) {
             M marking = clazz.cast(state.getIdentifier());
-            BigDecimal probability =
-                    getProbabilityToComplete(marking).getValue().setScale(5,
-                            RoundingMode.HALF_EVEN);
-            String label = String.format("[%s\n%s", probability, marking.toStringNewLines());
+            String label = String.format("[%s", marking.toStringNewLines());
             DotNode dotNode = dot.addNode(label);
             dotNode.setSelectable(true);
             stateMap.put(state, dotNode);
@@ -113,9 +92,7 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
             for (Transition transition : transitions) {
                 State toState = transition.getTarget();
                 DotNode toDotNode = stateMap.get(toState);
-                StochasticObject so = (StochasticObject) (transition.getIdentifier());
-                BigDecimal probability = so.getProbability().getValue().setScale(5, RoundingMode.HALF_EVEN);
-                dot.addEdge(fromDotNode, toDotNode, probability.toString());
+                dot.addEdge(fromDotNode, toDotNode, transition.getIdentifier().toString());
             }
         }
         return dot;
@@ -123,8 +100,8 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
 
     @Override
     public String toString() {
-        return String.format("modelMax: %s, noOptionToCompleteMarkings: %d, deadLockMarkings: %d",
-                getProbabilityToComplete().toString(), getMarkingsWithNoOptionToComplete().size(),
+        return String.format("noOptionToCompleteMarkings: %d, deadLockMarkings: %d",
+                getMarkingsWithNoOptionToComplete().size(),
                 getDeadLockMarkings().size());
     }
 }

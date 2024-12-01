@@ -86,8 +86,15 @@ public class ReachabilityGraphUtils {
             Collection<Transition> transitions = rg.getOutEdges(state);
             for (Transition transition : transitions) {
                 State toState = transition.getTarget();
-                StochasticObject so = (StochasticObject) (transition.getIdentifier());
-                sb.append(String.format("\"%s\" -> \"%s\" [label=\"%s\"];\n", state.getIdentifier().toString(), toState.getIdentifier().toString(), so.getProbability().getValue().setScale(5, RoundingMode.DOWN).toString()));
+                if (transition.getIdentifier() instanceof StochasticObject) {
+                    StochasticObject so = (StochasticObject) (transition.getIdentifier());
+                    sb.append(String.format("\"%s\" -> \"%s\" [label=\"%s\"];\n", state.getIdentifier().toString(),
+                            toState.getIdentifier().toString(), so.getProbability().getValue().setScale(5,
+                                    RoundingMode.DOWN).stripTrailingZeros()));
+                } else {
+                    sb.append(String.format("\"%s\" -> \"%s\" [label=\"%s\"];\n", state.getIdentifier().toString(),
+                            toState.getIdentifier().toString(), transition.getIdentifier()));
+                }
             }
         }
         sb.append("}");

@@ -26,10 +26,8 @@ public class StochasticTraceLanguageRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        StochasticTraceLanguageRunner visualizer = new StochasticTraceLanguageRunner(10000);
-        visualizer.visualize("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process "
-                + "Management/Process Mining/Process Models/BPMN/Stochastic/Instances/ComplexExamples/2 token " +
-                "choice/Instance - Stochastic BPMN - 2 token choice - alkuzman.bpmn");
+        StochasticTraceLanguageRunner visualizer = new StochasticTraceLanguageRunner(10);
+        visualizer.visualize("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/Logs/Handling of Compensation Requests/Hand Made/Instance - BPMN - Handling of Compensation Requests.bpmn");
     }
 
     final void visualize(String bpmnPath) throws Exception {

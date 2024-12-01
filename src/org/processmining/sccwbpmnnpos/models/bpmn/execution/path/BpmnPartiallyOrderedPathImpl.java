@@ -34,6 +34,16 @@ public class BpmnPartiallyOrderedPathImpl implements BpmnPartiallyOrderedPath {
     }
 
     @Override
+    public Event<BPMNNode> fire(BPMNNode item, int executionIndex) {
+        return path.fire(item, executionIndex);
+    }
+
+    @Override
+    public Event<BPMNNode> fire(Event<BPMNNode> event) {
+        return path.fire(event);
+    }
+
+    @Override
     public int getTimesFired(BPMNNode item) {
         return path.getTimesFired(item);
     }

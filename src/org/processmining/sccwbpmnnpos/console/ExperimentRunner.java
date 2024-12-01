@@ -6,12 +6,11 @@ import org.processmining.models.graphbased.directed.transitionsystem.Reachabilit
 import org.processmining.plugins.InductiveMiner.Pair;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceChecking;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.Bpmn2POReachabilityGraphConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.StochasticReachabilityGraphStaticAnalysis;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.StochasticReachabilityGraphStaticAnalyzer;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.ProbabilityMassStochasticLanguageGeneratorStopper;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.GraphSamplingType;
@@ -110,8 +109,8 @@ public class ExperimentRunner {
                                     runExperiments(log, model, activityFactory);
                             System.out.printf("%s: %s - %s\n", modelVariantForLogFolder.getName(), result.getA(), result.getB());
                         } catch (Exception e) {
-                            logger.error(String.format("Failure to read log from %s/%s",
-                                    modelVariantForLogFile.getPath(), modelVariantForLogFile.getName()), e);
+                            logger.error(String.format("Failure to read stochastic bpmn model from %s",
+                                    modelVariantForLogFile.getPath()), e);
                         }
                     }
                 }

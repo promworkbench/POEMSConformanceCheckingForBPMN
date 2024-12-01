@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic;
+package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer;
 
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;

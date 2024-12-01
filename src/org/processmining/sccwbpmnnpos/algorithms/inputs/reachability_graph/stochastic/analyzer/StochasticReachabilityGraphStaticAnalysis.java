@@ -1,4 +1,4 @@
-package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic;
+package org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer;
 
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.plugins.graphviz.dot.Dot;

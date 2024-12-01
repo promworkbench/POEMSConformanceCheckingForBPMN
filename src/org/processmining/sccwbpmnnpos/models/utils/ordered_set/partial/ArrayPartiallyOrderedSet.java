@@ -288,26 +288,26 @@ public class ArrayPartiallyOrderedSet<ELEMENT> implements PartiallyOrderedSet<EL
 
     @Override
     public String toString() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("PO{");
-//        sb.append(elements);
-//        sb.append(", [");
-//        int i = 0;
-//        for (Set<Integer> iPredecessors : predecessors) {
-//            for (Integer iPredecessor : iPredecessors) {
-//                sb.append("(");
-//                sb.append(getElement(iPredecessor));
-//                sb.append(" < ");
-//                sb.append(getElement(i));
-//                sb.append("), ");
-//            }
-//            i++;
-//        }
-//        sb = new StringBuilder(sb.substring(0, sb.length() - 2));
-//        sb.append("]");
-//        sb.append("}");
-//        return sb.toString();
-        return toGraphViz().toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("PO{");
+        sb.append(elements);
+        sb.append(", [");
+        int i = 0;
+        for (Set<Integer> iPredecessors : predecessors) {
+            for (Integer iPredecessor : iPredecessors) {
+                sb.append("(");
+                sb.append(getElement(iPredecessor));
+                sb.append(" < ");
+                sb.append(getElement(i));
+                sb.append("), ");
+            }
+            i++;
+        }
+        sb = new StringBuilder(sb.substring(0, sb.length() - 2));
+        sb.append("]");
+        sb.append("}");
+        return sb.toString();
+//        return toGraphViz().toString();
     }
 
     @Override

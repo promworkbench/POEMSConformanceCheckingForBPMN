@@ -11,6 +11,8 @@ public interface EventBasedPartiallyOrderedSet<I> extends AlphabetCollection<I> 
 
     Event<I> fire(I item, int executionIndex);
 
+    Event<I> fire(Event<I> event);
+
     int getTimesFired(I item);
 
     Event<I> getEvent(I item);

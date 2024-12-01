@@ -1,9 +1,6 @@
 package org.processmining.sccwbpmnnpos.algorithms.utils.cartesianproduct;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class NestedLoopsCartesianProductCalculator implements CartesianProductCalculator {
     @Override
@@ -14,15 +11,19 @@ public class NestedLoopsCartesianProductCalculator implements CartesianProductCa
         }
 
         // Start with an empty list
-        result.add(new LinkedList<>());
+        result.add(new ArrayList<>());
 
         for (Collection<T> vector : vectors) {
             List<List<T>> temp = new LinkedList<>();
             for (List<T> combination : result) {
+//                int j = 0;
                 for (T element : vector) {
-                    List<T> newCombination = new LinkedList<>(combination);
+                    LinkedList<T> newCombination = new LinkedList<>(combination);
+//                    int idx = Math.min(combination.size(), j);
+//                    newCombination.add(idx, element);
                     newCombination.add(element);
                     temp.add(newCombination);
+//                    j++;
                 }
             }
             result = temp;

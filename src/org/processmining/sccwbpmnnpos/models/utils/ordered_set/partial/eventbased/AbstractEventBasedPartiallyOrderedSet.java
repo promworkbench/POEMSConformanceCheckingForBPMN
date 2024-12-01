@@ -31,15 +31,25 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
         po.add(bpmnEvent);
         return bpmnEvent;
     }
-
     @Override
     public Event<I> fire(I item, int executionIndex) {
-        if (getTimesFired(item) > executionIndex) {
-            return null;
+//        if (lastFiredIndex.get(item) != executionIndex - 1) {
+//            return null;
+//        }
+        if (lastFiredIndex.get(item) == executionIndex) {
+            return getFiringEvent(item, executionIndex);
         }
-
-        return null;
+        lastFiredIndex.put(item, executionIndex);
+        Event<I> event = new Event<>(item, executionIndex);
+        po.add(event);
+        return event;
     }
+
+    @Override
+    public Event<I> fire(Event<I> event) {
+        return fire(event.getItem(), event.getFiringIndex());
+    }
+
 
     @Override
     public Event<I> getEvent(I item) {
@@ -58,6 +68,10 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
 
     @Override
     public Event<I> getFiringEvent(I item, int firingIndex) {
+        int timesFired = getTimesFired(item);
+        if (timesFired < firingIndex) {
+            return null;
+        }
         return new Event<>(item, firingIndex);
     }
 
@@ -174,8 +188,10 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
     @Override
     public void concatenate(EventBasedPartiallyOrderedSet<I> other) throws PartialOrderLoopNotAllowedException {
         PartiallyOrderedSet<Event<I>> otherPO = other.getPartiallyOrderedSet();
-        for (Event<I> current : otherPO) {
-            fire(current.getItem());
+        List<Event<I>> resultEvents = otherPO.stream().map(event -> new Event<>(event.getItem(),
+                event.getFiringIndex() + getTimesFired(event.getItem()))).collect(Collectors.toList());
+        for (Event<I> current : resultEvents) {
+            fire(current.getItem(), current.getFiringIndex());
         }
         for (Event<I> current : otherPO) {
             int currentIndex =
