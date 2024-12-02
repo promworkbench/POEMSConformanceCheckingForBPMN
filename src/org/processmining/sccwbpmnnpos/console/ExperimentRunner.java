@@ -149,6 +149,7 @@ public class ExperimentRunner {
 
     private ExperimentResult runExperiments(EventLogStochasticTOTraceLanguage logLanguage, StochasticBPMNDiagram bpmnDiagram, ActivityFactory activityFactory) {
         try {
+            long startTime = System.currentTimeMillis();
             ReachabilityGraph rg = sbpmn2Rg.convert(bpmnDiagram);
             StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgStaticAnalysis = rgAnalyzer.analyze(rg);
             ReachabilityGraph fixedRg = rgStaticAnalysis.getFixedReachabilityGraph();
@@ -163,7 +164,9 @@ public class ExperimentRunner {
             POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
             POEMSConformanceCheckingResult result = conformanceChecking.calculateConformance(modelLanguage,
                     logLanguage);
-            return new ExperimentResult(result, rgStaticAnalysis, modelLanguage.getProbability(), modelLanguage.size());
+            long endTime = System.currentTimeMillis();
+            return new ExperimentResult(result, rgStaticAnalysis, modelLanguage.getProbability(),
+                    modelLanguage.size(), endTime - startTime);
         } catch (BpmnUnboundedException | BpmnNoOptionToCompleteException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -174,19 +177,22 @@ public class ExperimentRunner {
         private final StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis;
         private final Probability modelLanguageCoverage;
         private final int modelLanguageSize;
+        private final long executionTimeMilis;
 
-        private ExperimentResult(POEMSConformanceCheckingResult ccResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis, Probability modelLanguageCoverage, int modelLanguageSize) {
+        private ExperimentResult(POEMSConformanceCheckingResult ccResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis, Probability modelLanguageCoverage, int modelLanguageSize, long executionTimeMilis) {
             this.ccResult = ccResult;
             this.reachabilityGraphStaticAnalysis = reachabilityGraphStaticAnalysis;
             this.modelLanguageCoverage = modelLanguageCoverage;
             this.modelLanguageSize = modelLanguageSize;
+            this.executionTimeMilis = executionTimeMilis;
         }
 
         @Override
         public String toString() {
-            return String.format("%s - languageSize: %d, coverage: %s, %s", ccResult, modelLanguageSize,
+            return String.format("%s - languageSize: %d, languageProbability: %s, %s, executionTime: %d", ccResult,
+                    modelLanguageSize,
                     modelLanguageCoverage.getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros(),
-                    reachabilityGraphStaticAnalysis);
+                    reachabilityGraphStaticAnalysis, executionTimeMilis);
         }
     }
 }
