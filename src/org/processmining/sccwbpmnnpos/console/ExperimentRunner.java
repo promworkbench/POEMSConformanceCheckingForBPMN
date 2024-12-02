@@ -9,6 +9,8 @@ import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEM
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
@@ -28,7 +30,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ExperimentRunner {
     private static final Logger logger = LoggerFactory.getLogger(ExampleRunner.class);
@@ -45,100 +52,141 @@ public class ExperimentRunner {
     }
 
     public static void main(String[] args) {
-        new ExperimentRunner().runExperiments("/home/aleks/Documents/DataResources/ProcessMining/Logs/",
-                "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process " +
-                        "Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Logs/",
-                "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Projects/Stochastic Conformance " +
-                        "Checking with BPMN");
+        File logsFolder = new File("/home/aleks/Documents/DataResources/ProcessMining/Logs/");
+        File modelsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts" +
+                "/Process Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Logs/");
+        File resultsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Projects/Stochastic Conformance " +
+                "Checking with BPMN/Experiments");
+        new ExperimentRunner().runExperiments(logsFolder, modelsFolder, resultsFolder);
     }
 
-    private void runExperiments(String logsFolderPath, String modelFolderPath, String resultFolderPath) {
-        File logsFolder = new File(logsFolderPath);
+    private Map<String, File> getLogs(File logsFolder) {
+        Map<String, File> logs = new HashMap<>();
         if (!logsFolder.exists() || !logsFolder.isDirectory()) {
-            return;
+            return logs;
         }
         File[] logFolders = logsFolder.listFiles();
         if (Objects.isNull(logFolders)) {
-            return;
+            return logs;
         }
         for (File logFolder : logFolders) {
-            String modelsForLogFolderPath = modelFolderPath + logFolder.getName();
-            File modelsForLogFolder = new File(modelsForLogFolderPath);
-            if (!modelsForLogFolder.exists() || !modelsForLogFolder.isDirectory()) {
-                continue;
-            }
-            File[] modelVariantForLogFolders = modelsForLogFolder.listFiles();
-            if (Objects.isNull(modelVariantForLogFolders)) {
-                continue;
-            }
+
             File[] logFiles = logFolder.listFiles();
             if (Objects.isNull(logFiles)) {
                 continue;
             }
-            XLog log = null;
+
             for (File logFile : logFiles) {
                 String[] logNameParts = logFile.getName().split("\\.");
                 if ("xes".equals(logNameParts[logNameParts.length - 1])) {
-                    try {
-                        log = logReader.read(logFile);
-                        System.out.println(logFolder.getName());
-                    } catch (Exception e) {
-                        logger.error(String.format("Failure to read log from %s/%s", logFile.getPath(),
-                                logFile.getName()), e);
-                    }
+                    logs.put(logFolder.getName(), logFile);
                 }
             }
-            if (Objects.isNull(log)) {
+        }
+        return logs;
+    }
+
+    private Map<String, Map<String, File>> getModels(File modelsFolder) {
+        Map<String, Map<String, File>> models = new HashMap<>();
+        if (!modelsFolder.exists() | !modelsFolder.isDirectory()) {
+            return models;
+        }
+
+        File[] logFolders = modelsFolder.listFiles();
+        if (Objects.isNull(logFolders)) {
+            return models;
+        }
+        for (File logFolder : logFolders) {
+            File[] modelVariantFolders = logFolder.listFiles();
+            if (Objects.isNull(modelVariantFolders)) {
                 continue;
             }
-
-            ActivityFactory activityFactory = ActivityFactory.getInstance();
-            for (File modelVariantForLogFolder : modelVariantForLogFolders) {
-                File[] modelVariantForLogFiles = modelVariantForLogFolder.listFiles();
-                if (Objects.isNull(modelVariantForLogFiles)) {
-                    System.out.printf("No models for %s", logFolder.getName());
+            Map<String, File> modelVariants = models.computeIfAbsent(logFolder.getName(), k -> new HashMap<>());
+            for (File modelVariantFolder : modelVariantFolders) {
+                File[] modelFiles = modelVariantFolder.listFiles();
+                if (Objects.isNull(modelFiles)) {
                     continue;
                 }
-                for (File modelVariantForLogFile : modelVariantForLogFiles) {
-                    String[] logNameParts = modelVariantForLogFile.getName().split("\\.");
-                    if ("bpmn".equals(logNameParts[logNameParts.length - 1])) {
-                        try {
-                            StochasticBPMNDiagram model = modelReader.read(modelVariantForLogFile);
-                            Pair<POEMSConformanceCheckingResult,
-                                    StochasticReachabilityGraphStaticAnalysis<BpmnMarking>> result =
-                                    runExperiments(log, model, activityFactory);
-                            System.out.printf("%s: %s - %s\n", modelVariantForLogFolder.getName(), result.getA(), result.getB());
-                        } catch (Exception e) {
-                            logger.error(String.format("Failure to read stochastic bpmn model from %s",
-                                    modelVariantForLogFile.getPath()), e);
-                        }
+                for (File modelFile : modelFiles) {
+                    String[] modelFileParts = modelFile.getName().split("\\.");
+                    if (!Objects.equals(modelFileParts[modelFileParts.length - 1], "bpmn")) {
+                        continue;
                     }
+                    modelVariants.put(modelVariantFolder.getName(), modelFile);
                 }
+            }
+        }
+
+        return models;
+    }
+
+    private void runExperiments(File logsFolder, File modelsFolder, File resultsFolder) {
+        Map<String, File> logFiles = getLogs(logsFolder);
+        Map<String, Map<String, File>> modelLogFiles = getModels(modelsFolder);
+        Set<String> uniqueModelVariants = modelLogFiles.values().stream().flatMap(m -> m.keySet().stream()).collect(Collectors.toSet());
+        for (Map.Entry<String, File> logFile : logFiles.entrySet()) {
+            Map<String, File> modelFiles = modelLogFiles.get(logFile.getKey());
+            if (Objects.isNull(modelFiles) || modelFiles.isEmpty()) {
+                continue;
+            }
+            try {
+                XLog log = logReader.read(logFile.getValue());
+                ActivityFactory activityFactory = ActivityFactory.getInstance();
+                EventLogStochasticTOTraceLanguage logLanguage = Xlog2StochasticTraceLanguageConverter.getInstance(new XEventNameClassifier(),
+                        activityFactory).convert(log);
+                System.out.println(logFile.getKey() + " " + logLanguage.size());
+                for (Map.Entry<String, File> modelFileVariant : modelFiles.entrySet()) {
+                    StochasticBPMNDiagram model = modelReader.read(modelFileVariant.getValue());
+                    ExperimentResult result =
+                            runExperiments(logLanguage, model, activityFactory);
+                    System.out.printf("%s: %s\n", modelFileVariant.getKey(), result);
+                }
+            } catch (Exception e) {
+                logger.error(String.format("Failure to read log from %s", logFile.getValue().getPath()), e);
             }
         }
     }
 
-    private Pair<POEMSConformanceCheckingResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking>> runExperiments(XLog log, StochasticBPMNDiagram bpmnDiagram,
-                                                                                                                        ActivityFactory activityFactory) {
+    private ExperimentResult runExperiments(EventLogStochasticTOTraceLanguage logLanguage, StochasticBPMNDiagram bpmnDiagram, ActivityFactory activityFactory) {
         try {
             ReachabilityGraph rg = sbpmn2Rg.convert(bpmnDiagram);
             StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgStaticAnalysis = rgAnalyzer.analyze(rg);
             ReachabilityGraph fixedRg = rgStaticAnalysis.getFixedReachabilityGraph();
             Probability requiredProbability =
-                    rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.0001));
+                    rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.000001));
 
-            StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory,
-                    new XEventNameClassifier(), GraphSamplingType.MOST_PROBABLE,
+            StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
+                    StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, GraphSamplingType.MOST_PROBABLE,
                     new ProbabilityMassStochasticLanguageGeneratorStopper(requiredProbability));
-            BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(fixedRg);
-            EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
+            BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.convert(fixedRg);
 
             POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
             POEMSConformanceCheckingResult result = conformanceChecking.calculateConformance(modelLanguage,
                     logLanguage);
-            return Pair.of(result, rgStaticAnalysis);
+            return new ExperimentResult(result, rgStaticAnalysis, modelLanguage.getProbability(), modelLanguage.size());
         } catch (BpmnUnboundedException | BpmnNoOptionToCompleteException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class ExperimentResult {
+        private final POEMSConformanceCheckingResult ccResult;
+        private final StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis;
+        private final Probability modelLanguageCoverage;
+        private final int modelLanguageSize;
+
+        private ExperimentResult(POEMSConformanceCheckingResult ccResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis, Probability modelLanguageCoverage, int modelLanguageSize) {
+            this.ccResult = ccResult;
+            this.reachabilityGraphStaticAnalysis = reachabilityGraphStaticAnalysis;
+            this.modelLanguageCoverage = modelLanguageCoverage;
+            this.modelLanguageSize = modelLanguageSize;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s - languageSize: %d, coverage: %s, %s", ccResult, modelLanguageSize,
+                    modelLanguageCoverage.getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros(),
+                    reachabilityGraphStaticAnalysis);
         }
     }
 }

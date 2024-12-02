@@ -123,8 +123,9 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
 
     @Override
     public String toString() {
-        return String.format("modelMax: %s, noOptionToCompleteMarkings: %d, deadLockMarkings: %d",
-                getProbabilityToComplete().toString(), getMarkingsWithNoOptionToComplete().size(),
+        return String.format("maxProbability: %s, markings: %d,  noOptionToCompleteMarkings: %d, deadLockMarkings: %d",
+                getProbabilityToComplete().toString(),
+                getReachabilityGraph().getNodes().size(), getMarkingsWithNoOptionToComplete().size(),
                 getDeadLockMarkings().size());
     }
 }

@@ -4,6 +4,7 @@ import org.processmining.models.graphbased.directed.transitionsystem.Reachabilit
 import org.processmining.models.graphbased.directed.transitionsystem.State;
 import org.processmining.models.graphbased.directed.transitionsystem.Transition;
 import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.plugins.graphviz.dot.DotCluster;
 import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.sccwbpmnnpos.models.execution.Marking;
 
@@ -71,19 +72,23 @@ public class ReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> implements
     @Override
     public Dot toGraphViz() {
         Dot dot = new Dot();
-        dot.setLabel(String.format(reachabilityGraph.getLabel()));
+        DotCluster dotCluster = dot.addCluster();
+        dotCluster.setLabel(String.format(reachabilityGraph.getLabel()));
         Collection<State> states = getReachabilityGraph().getNodes();
         Map<State, DotNode> stateMap = new HashMap<>();
         for (State state : states) {
             M marking = clazz.cast(state.getIdentifier());
             String label = String.format("[%s", marking.toStringNewLines());
-            DotNode dotNode = dot.addNode(label);
+            DotNode dotNode = dotCluster.addNode(label);
             dotNode.setSelectable(true);
             stateMap.put(state, dotNode);
 
             if (markingsWithoutOptionToComplete.contains(marking)) {
                 dotNode.setOption("style", "filled");
                 dotNode.setOption("fillcolor", "red");
+            } else {
+                dotNode.setOption("style", "filled");
+                dotNode.setOption("fillcolor", "white");
             }
         }
         for (State state : states) {
@@ -92,7 +97,7 @@ public class ReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> implements
             for (Transition transition : transitions) {
                 State toState = transition.getTarget();
                 DotNode toDotNode = stateMap.get(toState);
-                dot.addEdge(fromDotNode, toDotNode, transition.getIdentifier().toString());
+                dotCluster.addEdge(fromDotNode, toDotNode, transition.getIdentifier().toString());
             }
         }
         return dot;

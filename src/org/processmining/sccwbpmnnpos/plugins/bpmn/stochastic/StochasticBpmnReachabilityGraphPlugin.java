@@ -61,7 +61,9 @@ public class StochasticBpmnReachabilityGraphPlugin {
             ".kuzmanoski@rwth-aachen.de")
     @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
     public ReachabilityGraph run(PluginContext context, StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException {
-        return converter.convert(diagram);
+        ReachabilityGraph reachabilityGraph = converter.convert(diagram);
+        context.getFutureResult(0).setLabel(reachabilityGraph.getLabel() + " Stochastic Reachability Graph");
+        return reachabilityGraph;
     }
 
     /**
@@ -76,6 +78,6 @@ public class StochasticBpmnReachabilityGraphPlugin {
     @PluginVariant(variantLabel = "Stochastic BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
     public ReachabilityGraph run(PluginContext context, StochasticBpmn bpmn) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
-        return converter.convert(diagramBuilder.build(bpmn));
+        return converter.convert(diagramBuilder.build(bpmn, ""));
     }
 }

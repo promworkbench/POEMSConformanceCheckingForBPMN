@@ -5,6 +5,8 @@ import org.processmining.sccwbpmnnpos.models.bpmn.execution.path.BpmnPartiallyOr
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
+import java.math.RoundingMode;
+
 public class StochasticBpmnReachabilityEdge extends BpmnReachabilityGraphEdge implements StochasticObject {
     private final Probability probability;
 
@@ -19,6 +21,6 @@ public class StochasticBpmnReachabilityEdge extends BpmnReachabilityGraphEdge im
 
     @Override
     public String toString() {
-        return getProbability() + ": " + super.toString();
+        return getProbability().getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros() + ": " + super.toString();
     }
 }

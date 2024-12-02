@@ -40,7 +40,9 @@ public class BpmnReachabilityGraphPlugin {
     @PluginVariant(variantLabel = "BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
     public ReachabilityGraph run(PluginContext context, BPMNDiagram diagram) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
-        return converter.convert(diagram);
+        ReachabilityGraph reachabilityGraph = converter.convert(diagram);
+        context.getFutureResult(0).setLabel(reachabilityGraph.getLabel() + " Reachability Graph");
+        return reachabilityGraph;
     }
 
     /**
@@ -55,6 +57,6 @@ public class BpmnReachabilityGraphPlugin {
     @PluginVariant(variantLabel = "BPMN Partially Ordered Reachability Graph", requiredParameterLabels = {0}, help = "")
     public ReachabilityGraph run(PluginContext context, Bpmn bpmn) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
-        return converter.convert(diagramBuilder.build(bpmn));
+        return converter.convert(diagramBuilder.build(bpmn, ""));
     }
 }

@@ -17,7 +17,7 @@ public interface XLogReader extends ObjectReader<InputStream, XLog> {
     }
 
     static ObjectReader<String, XLog> fromFileName() {
-        return new ObjectFilePathReader<>(fromInputStream());
+        return new ObjectFilePathReader<>(fromFile());
     }
 
     XLog read(final InputStream source) throws Exception;

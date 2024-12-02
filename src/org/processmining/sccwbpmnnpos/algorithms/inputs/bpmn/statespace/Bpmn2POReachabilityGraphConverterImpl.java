@@ -1,5 +1,7 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.processmining.models.graphbased.directed.bpmn.BPMNDiagram;
 import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
@@ -41,13 +43,12 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         this.cartesianProductCalculator = cartesianProductCalculator;
     }
 
-
     @Override
     public ReachabilityGraph convert(BPMNDiagram bpmnDiagram) throws BpmnNoOptionToCompleteException,
             BpmnUnboundedException {
         LOGGER.debug("Constructing Reachability Graph for BPMN");
         ExecutableBpmnDiagramImpl executableDiagram = new ExecutableBpmnDiagramImpl(bpmnDiagram, nodeFactory);
-        ReachabilityGraph reachabilityGraph = new ReachabilityGraph(bpmnDiagram.getLabel());
+        ReachabilityGraph reachabilityGraph = new ReachabilityGraph(bpmnDiagram.getLabel() + " - Reachability Graph");
 
         BpmnStateChange initialMarking = getInitialMarking(executableDiagram);
         reachabilityGraph.addState(initialMarking.getTargetMarking());
@@ -167,21 +168,21 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
 //                    k -> combination);
 //            combinationCount.adjustOrPutValue(combinationMarking, 1, 1);
 //        }
+        TObjectIntMap<BPMNNode> sourceNodesFired = new TObjectIntHashMap<>();
+        for (BpmnToken token : marking) {
+            sourceNodesFired.adjustOrPutValue(token.getSourceNode(), 1, 1);
+        }
 
         LinkedList<BpmnStateChange> result = new LinkedList<>();
         for (List<BpmnNodeFiringOption> combination : cartesianProduct) {
             combination.sort(Comparator.comparing(f -> f.getProducesMarking().iterator().next().getSinkNode()));
             BpmnPartiallyOrderedPath path = newPath();
-            for (BpmnToken token : marking) {
-                Event<BPMNNode> event = path.getEvent(token.getSourceNode());
-                path.fire(event);
+            for (BPMNNode node : sourceNodesFired.keySet()) {
+                int node_times_fired = sourceNodesFired.get(node);
+                for (int i = node_times_fired - 1; i >= 0; i--) {
+                    path.fire(node, -i);
+                }
             }
-//            for (BpmnNodeFiringOption firingOption : combination) {
-//                for (BpmnToken token : firingOption.getConsumesMarking()) {
-//                    Event<BPMNNode> event = path.getEvent(token.getSourceNode());
-//                    path.fire(event);
-//                }
-//            }
             BpmnMarking currentMarking = markingUtils.copy(marking);
             BpmnMarking resultMarking;
             try {

@@ -13,7 +13,7 @@ public class NonRepetitiveEventBasedPartiallyOrderedSet<I> extends AbstractEvent
         }
         Set<Event<I>> predecessors = getPartiallyOrderedSet().getAscendants(predecessor);
         for (Event<I> poPredecessor : predecessors) {
-            if (poPredecessor.getFiringIndex() == 0) {
+            if (poPredecessor.getFiringIndex() <= 0) {
                 continue;
             }
             if (poPredecessor.getItem().equals(successor)) {

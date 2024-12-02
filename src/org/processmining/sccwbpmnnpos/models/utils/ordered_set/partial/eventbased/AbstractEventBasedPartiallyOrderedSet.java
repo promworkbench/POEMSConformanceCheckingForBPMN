@@ -16,7 +16,7 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
 
     public AbstractEventBasedPartiallyOrderedSet() {
         po = new ArrayPartiallyOrderedSet<>();
-        lastFiredIndex = new TObjectIntHashMap<>(10, 0.5F, -1);
+        lastFiredIndex = new TObjectIntHashMap<>(10, 0.5F, Integer.MIN_VALUE);
     }
 
     @Override
@@ -60,10 +60,7 @@ public abstract class AbstractEventBasedPartiallyOrderedSet<I> implements EventB
     @Override
     public int getTimesFired(I item) {
         int lastFiringIndex = lastFiredIndex.get(item);
-        if (lastFiredIndex.getNoEntryValue() == lastFiringIndex) {
-            return 0;
-        }
-        return lastFiringIndex;
+        return Math.max(lastFiringIndex, 0);
     }
 
     @Override
