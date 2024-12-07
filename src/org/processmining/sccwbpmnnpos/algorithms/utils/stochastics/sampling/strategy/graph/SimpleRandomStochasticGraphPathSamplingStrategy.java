@@ -12,10 +12,10 @@ public class SimpleRandomStochasticGraphPathSamplingStrategy<T extends PathOptio
     @Override
     public Sampler<T> getSampler() {
         return new Sampler<T>() {
-            final Map<StochasticObject, List<T>> pathOptions = new HashMap<>();
+            final Map<StochasticObject, LinkedList<T>> pathOptions = new HashMap<>();
             @Override
             public void add(T spPathOption) {
-                List<T> list = pathOptions.computeIfAbsent(spPathOption.getState(), k -> new LinkedList<>());
+                LinkedList<T> list = pathOptions.computeIfAbsent(spPathOption.getState(), k -> new LinkedList<>());
                 list.add(spPathOption);
             }
 
@@ -27,16 +27,27 @@ public class SimpleRandomStochasticGraphPathSamplingStrategy<T extends PathOptio
             @Override
             public T next() {
                 StochasticObject nextState = pathOptions.keySet().iterator().next();
-                List<T> paths = pathOptions.get(nextState);
-                pathOptions.remove(nextState);
+                LinkedList<T> paths = pathOptions.get(nextState);
+                if (paths.size() == 1) {
+                    pathOptions.remove(nextState);
+                    return paths.getFirst();
+                }
+                Probability totalPathsProbability = Probability.ZERO;
+                for (T path : paths) {
+                    totalPathsProbability = totalPathsProbability.add(path.getProbability());
+                }
+
                 Random random = new Random();
-                Probability randomNumber = Probability.of(random.nextDouble());
+                Probability randomNumber = Probability.of(random.nextDouble()).multiply(totalPathsProbability);
                 Probability totalProbability = Probability.ZERO;
+                int i = 0;
                 for (T path : paths) {
                     totalProbability = totalProbability.add(path.getPathOption().getProbability());
-                    if (totalProbability.compareTo(randomNumber) > 0) {
+                    if (totalProbability.compareTo(randomNumber) >= 0) {
+                        paths.remove(i);
                         return path;
                     }
+                    i++;
                 }
                 if (hasNext()) {
                     return next();

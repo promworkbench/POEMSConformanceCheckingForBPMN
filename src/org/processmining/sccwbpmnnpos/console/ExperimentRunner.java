@@ -54,7 +54,7 @@ public class ExperimentRunner {
     public static void main(String[] args) {
         File logsFolder = new File("/home/aleks/Documents/DataResources/ProcessMining/Logs/");
         File modelsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts" +
-                "/Process Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Logs/");
+                "/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/Logs/");
         File resultsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Projects/Stochastic Conformance " +
                 "Checking with BPMN/Experiments");
         new ExperimentRunner().runExperiments(logsFolder, modelsFolder, resultsFolder);

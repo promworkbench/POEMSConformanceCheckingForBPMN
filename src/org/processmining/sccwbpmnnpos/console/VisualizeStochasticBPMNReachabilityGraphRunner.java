@@ -25,7 +25,7 @@ public class VisualizeStochasticBPMNReachabilityGraphRunner {
 
     public static void main(String[] args) throws Exception {
         VisualizeStochasticBPMNReachabilityGraphRunner visualizer = new VisualizeStochasticBPMNReachabilityGraphRunner();
-        visualizer.visualize("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Logs/Handling of Compensation Requests/Hand Made/Instance - SBPMN - Handling of Compensation Requests Simplified.bpmn");
+        visualizer.visualize("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/Logs/Handling of Compensation Requests/Hand Made/Instance - SBPMN - Handling of Compensation Requests Simplified.bpmn");
     }
 
     final void visualize(String bpmnPath) throws Exception {

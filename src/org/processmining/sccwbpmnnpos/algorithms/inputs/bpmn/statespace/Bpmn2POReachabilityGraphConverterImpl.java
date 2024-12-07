@@ -245,9 +245,6 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 } else {
                     sourceNodeFiringIndex = path.getTimesFired(sourceNode) - resultMarking.nodeProducedTokensCount(sourceNode);
                 }
-                if (sourceNodeFiringIndex < 0) {
-                    continue;
-                }
                 EventBasedPartiallyOrderedSet.Event<BPMNNode> sourceEvent = path.getFiringEvent(sourceNode,
                         sourceNodeFiringIndex);
                 try {
