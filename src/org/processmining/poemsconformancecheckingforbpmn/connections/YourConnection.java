@@ -1,10 +1,10 @@
-package org.processmining.newpackageivy.connections;
+package org.processmining.poemsconformancecheckingforbpmn.connections;
 
 import org.processmining.framework.connections.impl.AbstractConnection;
-import org.processmining.newpackageivy.models.YourFirstInput;
-import org.processmining.newpackageivy.models.YourOutput;
-import org.processmining.newpackageivy.models.YourSecondInput;
-import org.processmining.newpackageivy.parameters.YourParameters;
+import org.processmining.poemsconformancecheckingforbpmn.models.YourFirstInput;
+import org.processmining.poemsconformancecheckingforbpmn.models.YourOutput;
+import org.processmining.poemsconformancecheckingforbpmn.models.YourSecondInput;
+import org.processmining.poemsconformancecheckingforbpmn.parameters.YourParameters;
 
 public class YourConnection extends AbstractConnection {
 
