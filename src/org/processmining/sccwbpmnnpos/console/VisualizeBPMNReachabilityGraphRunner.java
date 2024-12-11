@@ -27,7 +27,7 @@ public class VisualizeBPMNReachabilityGraphRunner {
 
     public static void main(String[] args) throws Exception {
         VisualizeBPMNReachabilityGraphRunner visualizer = new VisualizeBPMNReachabilityGraphRunner();
-        String bpmnPath = "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/Examples/No option to complete/Live Lock/Instance - BPMN - 3 State LiveLock.bpmn";
+        String bpmnPath = "/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/Examples/No option to complete/Livelock and Deadlock/Instance - BPMN - Livelock and Deadlock.bpmn";
 
         File bpmnFile = new File(bpmnPath);
         visualizer.visualize(bpmnFile);
@@ -43,6 +43,6 @@ public class VisualizeBPMNReachabilityGraphRunner {
         String resultFileName = "Instance - BPMN Reachability Graph - " + namePart + ".dot";
         File resultFile = new File(bpmnFile.getParentFile(), resultFileName);
         rgAnalysis.toGraphViz().exportToFile(resultFile);
-//        System.out.println(rgAnalysis.toGraphViz().toString());
+        System.out.println(rgAnalysis.toGraphViz().toString());
     }
 }

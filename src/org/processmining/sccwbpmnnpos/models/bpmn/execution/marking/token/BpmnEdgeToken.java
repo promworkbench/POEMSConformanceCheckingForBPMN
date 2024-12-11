@@ -57,6 +57,10 @@ public class BpmnEdgeToken implements BpmnToken {
 //            return edge.getEdgeID().toString();
 //        }
 
+        String label = edge.getLabel();
+        if (Objects.nonNull(label) && !label.isEmpty()) {
+            return label;
+        }
         String s = String.valueOf(getSourceNode().hashCode());
         String sIdx;
         if (s.length() < 3) {
@@ -71,6 +75,6 @@ public class BpmnEdgeToken implements BpmnToken {
         } else {
             tIdx = t.substring(t.length() - 3);
         }
-        return sIdx + " " + getSourceNode()  + " < " + tIdx + " " + getSinkNode();
+        return getSourceNode()  + " < " + getSinkNode();
     }
 }

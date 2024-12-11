@@ -54,8 +54,10 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
         reachabilityGraph.addState(initialMarking.getTargetMarking());
         BpmnMarking marking2 = executeUntilThereAreOnlyChoices(executableDiagram, initialMarking.getTargetMarking(),
                 initialMarking.getEdge().getPath());
-        reachabilityGraph.addState(marking2);
-        reachabilityGraph.addTransition(initialMarking.getTargetMarking(), marking2, initialMarking.getEdge());
+        if (!marking2.equals(initialMarking.getTargetMarking())) {
+            reachabilityGraph.addState(marking2);
+            reachabilityGraph.addTransition(initialMarking.getTargetMarking(), marking2, initialMarking.getEdge());
+        }
 
         Set<BpmnMarking> markings = new HashSet<>();
         markings.add(marking2);
@@ -82,7 +84,9 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                         }
                         reachabilityGraph.addState(nextState.getTargetMarking());
                     }
-                    reachabilityGraph.addTransition(marking, nextState.getTargetMarking(), nextState.getEdge());
+                    if (!nextState.getEdge().getPath().isEmpty()) {
+                        reachabilityGraph.addTransition(marking, nextState.getTargetMarking(), nextState.getEdge());
+                    }
                 }
             }
             markings = tmp;

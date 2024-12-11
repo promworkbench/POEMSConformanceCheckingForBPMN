@@ -63,9 +63,9 @@ public interface EventBasedPartiallyOrderedSet<I> extends AlphabetCollection<I> 
 
         @Override
         public String toString() {
-            String s = String.valueOf(getItem().hashCode());
-            String elementIdx = s.substring(Math.max(0, s.length() - 3));
-            return elementIdx + " " + getItem().toString() + "." + getFiringIndex();
+//            String s = String.valueOf(getItem().hashCode());
+//            String elementIdx = s.substring(Math.max(0, s.length() - 3));
+            return getItem().toString() + "." + getFiringIndex();
         }
     }
 }

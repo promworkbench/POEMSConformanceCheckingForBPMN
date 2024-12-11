@@ -96,8 +96,8 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
             M marking = clazz.cast(state.getIdentifier());
             BigDecimal probability =
                     getProbabilityToComplete(marking).getValue().setScale(5,
-                            RoundingMode.HALF_EVEN);
-            String label = String.format("[%s\n%s", probability, marking.toStringNewLines());
+                            RoundingMode.HALF_EVEN).stripTrailingZeros();
+            String label = String.format("%s\n%s", probability, marking.toStringNewLines());
             DotNode dotNode = dot.addNode(label);
             dotNode.setSelectable(true);
             stateMap.put(state, dotNode);
@@ -114,7 +114,7 @@ public class StochasticReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> 
                 State toState = transition.getTarget();
                 DotNode toDotNode = stateMap.get(toState);
                 StochasticObject so = (StochasticObject) (transition.getIdentifier());
-                BigDecimal probability = so.getProbability().getValue().setScale(5, RoundingMode.HALF_EVEN);
+                BigDecimal probability = so.getProbability().getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros();
                 dot.addEdge(fromDotNode, toDotNode, probability.toString());
             }
         }
