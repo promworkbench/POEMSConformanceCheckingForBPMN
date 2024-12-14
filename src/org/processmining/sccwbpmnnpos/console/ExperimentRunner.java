@@ -22,6 +22,7 @@ import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.Bpmn
 import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 import org.processmining.sccwbpmnnpos.utils.log.XLogReader;
+import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramFromSPNReader;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 public class ExperimentRunner {
     private static final Logger logger = LoggerFactory.getLogger(ExampleRunner.class);
     private final ObjectReader<File, StochasticBPMNDiagram> modelReader;
+    private final ObjectReader<File, StochasticBPMNDiagram> spnReader;
     private final ObjectReader<File, XLog> logReader;
     private final StochasticBpmn2POReachabilityGraphConverter sbpmn2Rg;
     private final StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> rgAnalyzer;
@@ -49,12 +51,12 @@ public class ExperimentRunner {
         this.logReader = XLogReader.fromFile();
         this.sbpmn2Rg = StochasticBpmn2POReachabilityGraphConverter.getInstance();
         this.rgAnalyzer = StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class);
+        this.spnReader = StochasticBPMNDiagramFromSPNReader.fromFile();
     }
 
     public static void main(String[] args) {
         File logsFolder = new File("/home/aleks/Documents/DataResources/ProcessMining/Logs/");
-        File modelsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts" +
-                "/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/Logs/");
+        File modelsFolder = new File("/home/aleks/Documents/DataResources/ProcessMining/StochasticPetriNets/Logs");
         File resultsFolder = new File("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Projects/Stochastic Conformance " +
                 "Checking with BPMN/Experiments");
         new ExperimentRunner().runExperiments(logsFolder, modelsFolder, resultsFolder);
@@ -109,7 +111,8 @@ public class ExperimentRunner {
                 }
                 for (File modelFile : modelFiles) {
                     String[] modelFileParts = modelFile.getName().split("\\.");
-                    if (!Objects.equals(modelFileParts[modelFileParts.length - 1], "bpmn")) {
+                    String extension = modelFileParts[modelFileParts.length - 1];
+                    if (!(Objects.equals(extension, "bpmn") || Objects.equals(extension, "pnml"))) {
                         continue;
                     }
                     modelVariants.put(modelVariantFolder.getName(), modelFile);
@@ -136,10 +139,23 @@ public class ExperimentRunner {
                         activityFactory).convert(log);
                 System.out.println(logFile.getKey() + " " + logLanguage.size());
                 for (Map.Entry<String, File> modelFileVariant : modelFiles.entrySet()) {
-                    StochasticBPMNDiagram model = modelReader.read(modelFileVariant.getValue());
-                    ExperimentResult result =
-                            runExperiments(logLanguage, model, activityFactory);
-                    System.out.printf("%s: %s\n", modelFileVariant.getKey(), result);
+                    String[] modelFileParts = modelFileVariant.getValue().getName().split("\\.");
+                    String extension = modelFileParts[modelFileParts.length - 1];
+                    StochasticBPMNDiagram model;
+                    if (Objects.equals(extension, "bpmn")) {
+                        model = modelReader.read(modelFileVariant.getValue());
+                    } else {
+                        model = spnReader.read(modelFileVariant.getValue());
+                    }
+//                    model = modelReader.read(modelFileVariant.getValue());
+                    System.out.println("Run: " + modelFileVariant.getValue().getParentFile().getName());
+                    try {
+                        ExperimentResult result =
+                                runExperiments(logLanguage, model, activityFactory);
+                        System.out.printf("%s: %s\n", modelFileVariant.getKey(), result);
+                    } catch (Exception e) {
+                        logger.error(String.format("Failure to execute %s", modelFileVariant.getValue().getParentFile().getName()), e);
+                    }
                 }
             } catch (Exception e) {
                 logger.error(String.format("Failure to read log from %s", logFile.getValue().getPath()), e);
@@ -154,7 +170,7 @@ public class ExperimentRunner {
             StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgStaticAnalysis = rgAnalyzer.analyze(rg);
             ReachabilityGraph fixedRg = rgStaticAnalysis.getFixedReachabilityGraph();
             Probability requiredProbability =
-                    rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.000001));
+                    rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.0001));
 
             StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
                     StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, GraphSamplingType.MOST_PROBABLE,

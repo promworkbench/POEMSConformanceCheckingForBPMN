@@ -7,12 +7,14 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stoch
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactory;
+import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramFromSPNReader;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
 
 public class VisualizeStochasticBPMNReachabilityGraphRunner {
     private final ObjectReader<String, StochasticBPMNDiagram> diagramReader;
+    private final ObjectReader<String, StochasticBPMNDiagram> spnDiagramReader;
     private final StochasticBpmn2POReachabilityGraphConverter sbpmn2Rg;
     private final StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> rgAnalyzer;
 
@@ -21,15 +23,16 @@ public class VisualizeStochasticBPMNReachabilityGraphRunner {
         this.sbpmn2Rg =
                 StochasticBpmn2POReachabilityGraphConverter.getInstance(ExecutableStochasticBpmnNodeFactory.getInstance());
         this.rgAnalyzer = StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class);
+        this.spnDiagramReader = StochasticBPMNDiagramFromSPNReader.fromFileName();
     }
 
     public static void main(String[] args) throws Exception {
         VisualizeStochasticBPMNReachabilityGraphRunner visualizer = new VisualizeStochasticBPMNReachabilityGraphRunner();
-        visualizer.visualize("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Instances/Examples/No option to complete/Livelock and Deadlock/Instance - BPMN - Livelock and Deadlock.bpmn");
+        visualizer.visualize("/home/aleks/Documents/DataResources/ProcessMining/StochasticPetriNets/Logs/Road Traffic Fine Management Process/RDS_globalPre/rtfm_RDS_globalPre.pnml");
     }
 
     final void visualize(String bpmnPath) throws Exception {
-        StochasticBPMNDiagram diagram = diagramReader.read(bpmnPath);
+        StochasticBPMNDiagram diagram = spnDiagramReader.read(bpmnPath);
         ReachabilityGraph rg = sbpmn2Rg.convert(diagram);
         StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgAnalysisResult = rgAnalyzer.analyze(rg);
         Dot graphViz = rgAnalysisResult.toGraphViz();

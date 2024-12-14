@@ -50,7 +50,6 @@ public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements S
                 addNextSample(sampler, rg, newPath, pathOption.getProbability(),
                         pathOption.getNextState());
             }
-
         }
         return stochasticLanguage;
     }

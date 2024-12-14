@@ -27,7 +27,7 @@ public class BpmnPOReachabilityGraphPathConstructor2 implements BpmnPOReachabili
             newPath.concatenate(basePath);
             newPath.concatenate(additionPath);
         } catch (PartialOrderLoopNotAllowedException e) {
-            throw new RuntimeException("This should not happen because we are merging repetitive partial orders", e);
+            throw new RuntimeException(String.format("This should not happen because we are merging repetitive partial orders. %s", marking), e);
         }
 
 //        if (marking.isInitial()) {

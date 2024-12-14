@@ -46,7 +46,7 @@ public class ExampleRunner {
         try {
             final XLog log = logReader.read
                     ("/home/aleks/Documents/DataResources/ProcessMining/Logs/Handling of Compensation Requests/Handling of Compensation Requests.xes");
-            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Stochastic/Instances/Instance - Stochastic BPMN - rtfm_IMf02_ABE 1.bpmn");
+            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/Logs/Handling of Compensation Requests/Hand Made/Instance - SBPMN - Handling of Compensation Requests Simplified.bpmn");
             ReachabilityGraph rg = sbpmn2Rg.convert(diagram);
             StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgAnalysisResult = rgStaticAnalyzer.analyze(rg);
             ReachabilityGraph newRg = rgAnalysisResult.getFixedReachabilityGraph();

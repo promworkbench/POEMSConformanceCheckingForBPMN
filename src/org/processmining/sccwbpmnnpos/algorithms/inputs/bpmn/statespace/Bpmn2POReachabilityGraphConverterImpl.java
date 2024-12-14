@@ -74,12 +74,13 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                         Set<BpmnMarking> preMarkings =
                                 preSet.stream().map(s -> (BpmnMarking) s.getIdentifier()).collect(Collectors.toSet());
                         preMarkings.add(marking);
+                        boolean unbounded = false;
                         for (BpmnMarking preMarking : preMarkings) {
                             if (nextState.getTargetMarking().contains(preMarking)) {
-                                throw new BpmnUnboundedException(nextState.getTargetMarking(), preMarking);
+                                unbounded = true;
                             }
                         }
-                        if (!nextState.getTargetMarking().isEmpty() && nextState.isComplete()) {
+                        if (!nextState.getTargetMarking().isEmpty() && nextState.isComplete() && !unbounded) {
                             tmp.add(nextState.getTargetMarking());
                         }
                         reachabilityGraph.addState(nextState.getTargetMarking());

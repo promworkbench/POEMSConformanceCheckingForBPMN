@@ -29,12 +29,12 @@
             <artifact
                     pattern="${ivy.local.default.root}/${ivy.local.default.artifact.pattern}" />
         </filesystem>
-        <chain name="default" returnFirst="true">  
-            <resolver ref="prom" />  
-            <resolver ref="prom-svn" />  
-            <resolver ref="prom-libs" />  
+        <chain name="default" returnFirst="true">
+            <resolver ref="prom" />
+            <resolver ref="prom-svn" />
+            <resolver ref="prom-libs" />
             <resolver ref="maven2" />
-            <resolver ref="local" />
-        </chain>  
+<!--            <resolver ref="local" />-->
+        </chain>
     </resolvers>
 </ivysettings>
