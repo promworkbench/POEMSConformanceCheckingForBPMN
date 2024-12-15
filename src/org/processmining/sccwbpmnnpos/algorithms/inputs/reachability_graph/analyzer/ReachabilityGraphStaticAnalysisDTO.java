@@ -78,7 +78,7 @@ public class ReachabilityGraphStaticAnalysisDTO<M extends Marking<?>> implements
         Map<State, DotNode> stateMap = new HashMap<>();
         for (State state : states) {
             M marking = clazz.cast(state.getIdentifier());
-            String label = String.format("[%s", marking.toStringNewLines());
+            String label = String.format("%s", marking.toStringNewLines());
             DotNode dotNode = dotCluster.addNode(label);
             dotNode.setSelectable(true);
             stateMap.put(state, dotNode);

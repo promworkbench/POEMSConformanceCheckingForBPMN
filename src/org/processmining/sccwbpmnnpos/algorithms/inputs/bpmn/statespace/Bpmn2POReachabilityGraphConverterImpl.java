@@ -77,6 +77,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                         boolean unbounded = false;
                         for (BpmnMarking preMarking : preMarkings) {
                             if (nextState.getTargetMarking().contains(preMarking)) {
+                                LOGGER.error(String.format("Unbounded detected between markings %s and %s", preMarking, nextState.getTargetMarking()));
                                 unbounded = true;
                             }
                         }
@@ -123,6 +124,7 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
                 newMarking = executeUntilThereAreOnlyChoices(diagram, choiceMarking.getTargetMarking(),
                         choiceMarking.getEdge().getPath());
             } catch (BpmnNoOptionToCompleteException e) {
+                LOGGER.error("Parrallel Executions", e);
                 finalMarkings.add(new BpmnStateChange(e.reachedMarking, choiceMarking.getEdge(), false));
             }
             finalMarkings.add(new BpmnStateChange(newMarking, choiceMarking.getEdge()));
