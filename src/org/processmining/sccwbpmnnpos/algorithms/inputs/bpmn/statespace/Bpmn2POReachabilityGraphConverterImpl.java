@@ -183,9 +183,21 @@ public class Bpmn2POReachabilityGraphConverterImpl implements Bpmn2POReachabilit
             combination.sort(Comparator.comparing(f -> f.getProducesMarking().iterator().next().getSinkNode()));
             BpmnPartiallyOrderedPath path = newPath();
             for (BPMNNode node : sourceNodesFired.keySet()) {
-                int node_times_fired = sourceNodesFired.get(node);
-                for (int i = node_times_fired - 1; i >= 0; i--) {
-                    path.fire(node, -i);
+                ExecutableBpmnNode sourceFiringNode = nodeFactory.create(node);
+                if (sourceFiringNode.getProducesTokensCount() > 1) {
+                    int firedTimes = 0;
+                    for (BpmnToken token : marking) {
+                        if (token.getSourceNode().equals(node)) {
+                            firedTimes = Math.max(firedTimes, marking.count(token));
+                        }
+                    }
+                    for (int i = firedTimes - 1; i >= 0; i--) {
+                        path.fire(node, -i);
+                    }
+                } else {
+                    for (int i = marking.nodeProducedTokensCount(node) - 1; i >= 0; i--) {
+                        path.fire(node, -i);
+                    }
                 }
             }
             BpmnMarking currentMarking = markingUtils.copy(marking);

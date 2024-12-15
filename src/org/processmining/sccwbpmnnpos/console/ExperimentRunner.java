@@ -10,6 +10,8 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOp
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimplifier;
+import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.simplified.SimplifiedLog2StochasticLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
@@ -19,6 +21,7 @@ import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stra
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
 import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 import org.processmining.sccwbpmnnpos.utils.log.XLogReader;
@@ -26,6 +29,8 @@ import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMN
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
+import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticFlow;
+import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticGateway;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +45,17 @@ import java.util.stream.Collectors;
 
 public class ExperimentRunner {
     private static final Logger logger = LoggerFactory.getLogger(ExampleRunner.class);
+    private final ObjectReader<File, XLog> logReader;
+    private final SimplifiedLog2StochasticLanguageConverter slog2slConverter;
     private final ObjectReader<File, StochasticBPMNDiagram> modelReader;
     private final ObjectReader<File, StochasticBPMNDiagram> spnReader;
-    private final ObjectReader<File, XLog> logReader;
     private final StochasticBpmn2POReachabilityGraphConverter sbpmn2Rg;
     private final StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> rgAnalyzer;
 
     public ExperimentRunner() {
-        this.modelReader = StochasticBPMNDiagramReader.fromFile();
         this.logReader = XLogReader.fromFile();
+        this.slog2slConverter = SimplifiedLog2StochasticLanguageConverter.getInstance();
+        this.modelReader = StochasticBPMNDiagramReader.fromFile();
         this.sbpmn2Rg = StochasticBpmn2POReachabilityGraphConverter.getInstance();
         this.rgAnalyzer = StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class);
         this.spnReader = StochasticBPMNDiagramFromSPNReader.fromFile();
@@ -135,9 +142,9 @@ public class ExperimentRunner {
             try {
                 XLog log = logReader.read(logFile.getValue());
                 ActivityFactory activityFactory = ActivityFactory.getInstance();
-                EventLogStochasticTOTraceLanguage logLanguage = Xlog2StochasticTraceLanguageConverter.getInstance(new XEventNameClassifier(),
-                        activityFactory).convert(log);
-                System.out.println(logFile.getKey() + " " + logLanguage.size());
+                SimplifiedEventLog slog = XLogSimplifier.getInstance(new XEventNameClassifier(), activityFactory).simplify(log);
+                EventLogStochasticTOTraceLanguage logLanguage = slog2slConverter.convert(slog);
+                System.out.printf("%s - traces: %d, variants: %d\n", logFile.getKey(), slog.size(), logLanguage.size());
                 for (Map.Entry<String, File> modelFileVariant : modelFiles.entrySet()) {
                     String[] modelFileParts = modelFileVariant.getValue().getName().split("\\.");
                     String extension = modelFileParts[modelFileParts.length - 1];
@@ -181,34 +188,41 @@ public class ExperimentRunner {
             POEMSConformanceCheckingResult result = conformanceChecking.calculateConformance(modelLanguage,
                     logLanguage);
             long endTime = System.currentTimeMillis();
-            return new ExperimentResult(result, rgStaticAnalysis, modelLanguage.getProbability(),
-                    modelLanguage.size(), endTime - startTime);
+            return new ExperimentResult(bpmnDiagram, result, rgStaticAnalysis, modelLanguage, endTime - startTime);
         } catch (BpmnUnboundedException | BpmnNoOptionToCompleteException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     private static class ExperimentResult {
+        private final StochasticBPMNDiagram bpmnDiagram;
         private final POEMSConformanceCheckingResult ccResult;
         private final StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis;
-        private final Probability modelLanguageCoverage;
-        private final int modelLanguageSize;
+        private final BpmnStochasticPOTraceLanguage modelLanguage;
         private final long executionTimeMilis;
 
-        private ExperimentResult(POEMSConformanceCheckingResult ccResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis, Probability modelLanguageCoverage, int modelLanguageSize, long executionTimeMilis) {
+        private ExperimentResult(StochasticBPMNDiagram bpmnDiagram, POEMSConformanceCheckingResult ccResult, StochasticReachabilityGraphStaticAnalysis<BpmnMarking> reachabilityGraphStaticAnalysis, BpmnStochasticPOTraceLanguage modelLanguage, long executionTimeMilis) {
+            this.bpmnDiagram = bpmnDiagram;
             this.ccResult = ccResult;
             this.reachabilityGraphStaticAnalysis = reachabilityGraphStaticAnalysis;
-            this.modelLanguageCoverage = modelLanguageCoverage;
-            this.modelLanguageSize = modelLanguageSize;
+            this.modelLanguage = modelLanguage;
             this.executionTimeMilis = executionTimeMilis;
         }
 
         @Override
         public String toString() {
-            return String.format("%s - languageSize: %d, languageProbability: %s, %s, executionTime: %d", ccResult,
-                    modelLanguageSize,
-                    modelLanguageCoverage.getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros(),
-                    reachabilityGraphStaticAnalysis, executionTimeMilis);
+            long numSGates = bpmnDiagram.getNodes().stream().filter(n -> n instanceof StochasticGateway).count();
+            long numSEdges = bpmnDiagram.getEdges().stream().filter(n -> n instanceof StochasticFlow).count();
+            return String.format("%s - #nodes: %d #sgates: %d, #edges: %d, #sedges: %d, %s, languageSize: %d, languageProbability: %s, executionTime: %d",
+                    ccResult,
+                    bpmnDiagram.getNodes().size(),
+                    numSGates,
+                    bpmnDiagram.getEdges().size(),
+                    numSEdges,
+                    reachabilityGraphStaticAnalysis,
+                    modelLanguage.size(),
+                    modelLanguage.getProbability().getValue().setScale(5, RoundingMode.HALF_EVEN).stripTrailingZeros(),
+                    executionTimeMilis);
         }
     }
 }
