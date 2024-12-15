@@ -26,6 +26,7 @@ import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.MultisetUtils;
 import org.processmining.sccwbpmnnpos.models.utils.multiset.utils.SimpleMultisetUtils;
 import org.processmining.stochasticbpmn.algorithms.diagram.builder.BpmnDiagramBuilderImpl;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.BpmnDiagramReader;
+import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramReader;
 import org.processmining.stochasticbpmn.algorithms.reader.BpmnInputStreamReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectFilePathReader;
 import org.processmining.stochasticbpmn.algorithms.reader.ObjectReader;
@@ -37,8 +38,7 @@ public class Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest {
     private final Bpmn2POReachabilityGraphConverter bpmnReachabilityGraphCreator;
 
     public Bpmn2PartiallyOrderedReachabilityGraphConverterImplTest() {
-        this.diagramReader = new ObjectFilePathReader<>(new BpmnDiagramReader(new BpmnInputStreamReader(),
-                new BpmnDiagramBuilderImpl()));
+        this.diagramReader = BpmnDiagramReader.fromFileName();
         MultisetFactory multisetFactory = new DefaultMultisetFactory();
         MultisetUtils multisetUtils = new SimpleMultisetUtils(multisetFactory);
         BpmnTokenFactory tokenFactory = new SimpleBpmnTokenFactory();

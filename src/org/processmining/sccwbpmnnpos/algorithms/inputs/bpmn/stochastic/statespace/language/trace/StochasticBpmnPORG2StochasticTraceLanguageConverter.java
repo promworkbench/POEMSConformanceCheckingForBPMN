@@ -9,8 +9,8 @@ import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.Bpmn
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 
 public interface StochasticBpmnPORG2StochasticTraceLanguageConverter {
-    static StochasticBpmnPORG2StochasticTraceLanguageConverter getInstance(ActivityFactory activityFactory, StochasticGraphPathSamplingStrategy.GraphSamplingType type, StochasticLanguageGeneratorStopper stopper) {
-        return new StochasticBpmnPORG2StochasticTraceFromPathLanguage(StochasticBpmnPORG2StochasticPathLanguageConverter.getInstance(type, stopper), BpmnPOPath2TraceConverter.getInstance(activityFactory));
+    static StochasticBpmnPORG2StochasticTraceLanguageConverter getInstance(ActivityFactory activityFactory, StochasticGraphPathSamplingStrategy.GraphSamplingType type, StochasticLanguageGeneratorStopper stopper, int maxPathLength) {
+        return new StochasticBpmnPORG2StochasticTraceFromPathLanguage(StochasticBpmnPORG2StochasticPathLanguageConverter.getInstance(type, stopper, maxPathLength), BpmnPOPath2TraceConverter.getInstance(activityFactory));
     }
 
     BpmnStochasticPOTraceLanguage convert(ReachabilityGraph transitionSystem);

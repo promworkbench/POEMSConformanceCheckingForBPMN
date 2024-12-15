@@ -22,7 +22,7 @@ public class StochasticTraceLanguageRunner {
         this.languageSize = languageSize;
         this.diagramReader = StochasticBPMNDiagramReader.fromFileName();
         this.languageGenerator =
-                StochasticLanguageGenerator.getInstance(StochasticGraphPathSamplingStrategy.GraphSamplingType.MOST_PROBABLE, new NumElementsStochasticLanguageGeneratorStopper(languageSize));
+                StochasticLanguageGenerator.getInstance(StochasticGraphPathSamplingStrategy.GraphSamplingType.MOST_PROBABLE, new NumElementsStochasticLanguageGeneratorStopper(languageSize), 1000);
     }
 
     public static void main(String[] args) throws Exception {

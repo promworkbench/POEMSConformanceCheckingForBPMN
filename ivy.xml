@@ -21,6 +21,8 @@
                     transitive="true"/>
         <dependency org="prom" name="BPMNConversions" rev="latest" changing="true"
                     transitive="true"/>
+        <dependency org="prom" name="BPMNAnalysis" rev="latest" changing="true"
+                    transitive="true"/>
         <dependency org="prom" name="PartialOrderReplayer" rev="latest" changing="true"
                     transitive="true"/>
         <dependency org="prom" name="EarthMoversStochasticConformanceChecking" rev="latest" changing="true"

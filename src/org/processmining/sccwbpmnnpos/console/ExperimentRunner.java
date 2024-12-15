@@ -21,8 +21,11 @@ import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stra
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.log.EventLogTrace;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
 import org.processmining.sccwbpmnnpos.models.log.stochastic.language.EventLogStochasticTOTraceLanguage;
+import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguageEntry;
+import org.processmining.sccwbpmnnpos.models.utils.activity.Activity;
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFactory;
 import org.processmining.sccwbpmnnpos.utils.log.XLogReader;
 import org.processmining.stochasticbpmn.algorithms.diagram.reader.StochasticBPMNDiagramFromSPNReader;
@@ -179,9 +182,14 @@ public class ExperimentRunner {
             Probability requiredProbability =
                     rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.0001));
 
+            int maxTraceSize = 0;
+            for (StochasticLanguageEntry<Activity, EventLogTrace> trace :
+                    logLanguage) {
+                maxTraceSize = Math.max(maxTraceSize, trace.getElement().size());
+            }
             StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
                     StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, GraphSamplingType.MOST_PROBABLE,
-                    new ProbabilityMassStochasticLanguageGeneratorStopper(requiredProbability));
+                    new ProbabilityMassStochasticLanguageGeneratorStopper(requiredProbability), maxTraceSize);
             BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.convert(fixedRg);
 
             POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);

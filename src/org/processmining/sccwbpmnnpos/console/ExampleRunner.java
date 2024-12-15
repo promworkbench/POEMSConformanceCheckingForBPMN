@@ -39,7 +39,7 @@ public class ExampleRunner {
         ActivityFactory activityFactory = ActivityFactory.getInstance();
         StochasticBpmn2POReachabilityGraphConverter sbpmn2Rg = StochasticBpmn2POReachabilityGraphConverter.getInstance();
         StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> rgStaticAnalyzer = StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class);
-        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory, defaultClassifier, defaultType, stopper);
+        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory, defaultClassifier, defaultType, stopper, 1000);
         ObjectReader<String, StochasticBPMNDiagram> diagramReader = StochasticBPMNDiagramReader.fromFileName();
         POEMSConformanceChecking poemsConformanceCheckingEmsc24Adapter = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
 

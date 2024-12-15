@@ -1,5 +1,7 @@
 package org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.path;
 
+import org.processmining.models.graphbased.directed.bpmn.BPMNNode;
+import org.processmining.models.graphbased.directed.bpmn.elements.Activity;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
 import org.processmining.models.graphbased.directed.transitionsystem.State;
 import org.processmining.models.graphbased.directed.transitionsystem.Transition;
@@ -25,11 +27,15 @@ public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements S
     private final StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy;
     private final StochasticLanguageGeneratorStopper stopper;
     private final BpmnPOReachabilityGraphPathConstructor pathConstructor;
+    private final int maxPathLength;
 
-    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, StochasticLanguageGeneratorStopper stopper, BpmnPOReachabilityGraphPathConstructor pathConstructor) {
+    public StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy<IntermediatePathOption> samplingStrategy, StochasticLanguageGeneratorStopper stopper, BpmnPOReachabilityGraphPathConstructor pathConstructor,
+                                                                  int maxPathLength
+    ) {
         this.samplingStrategy = samplingStrategy;
         this.stopper = stopper;
         this.pathConstructor = pathConstructor;
+        this.maxPathLength = maxPathLength;
     }
 
     @Override
@@ -56,6 +62,10 @@ public class StochasticBpmnPORG2StochasticPathLanguageConverterImpl implements S
 
     private void addNextSample(Sampler<IntermediatePathOption> sampler, ReachabilityGraph rg,
                                BpmnPartiallyOrderedPath path, Probability pathProbability, State state) {
+        long traceSize = path.stream().filter(n -> n instanceof Activity).count();
+        if (traceSize > maxPathLength) {
+            return;
+        }
         Collection<Transition> transitions = rg.getOutEdges(state);
         for (Transition transition : transitions) {
             StochasticBpmnReachabilityEdge rgEdge = (StochasticBpmnReachabilityEdge) (transition.getIdentifier());

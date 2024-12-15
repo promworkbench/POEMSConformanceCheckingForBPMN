@@ -7,12 +7,7 @@ import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.plugin.PluginContext;
-import org.processmining.framework.plugin.PluginContextID;
-import org.processmining.framework.plugin.annotations.Plugin;
-import org.processmining.framework.plugin.annotations.PluginLevel;
-import org.processmining.framework.plugin.annotations.PluginVariant;
-import org.processmining.framework.plugin.events.Logger;
-import org.processmining.framework.plugin.events.ProgressEventListener;
+import org.processmining.framework.plugin.annotations.*;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.YourAlgorithm;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
@@ -41,15 +36,64 @@ import java.util.Collection;
 
 @Plugin(
         name = "BPMN POEMS Conformance Checking",
-        parameterLabels = {"Stochastic BPMN", "Event Log", "Model Probability Mass"},
+        parameterLabels = {
+                "Stochastic BPMN",
+                "Event Log",
+                "Model Probability Mass"
+        },
         returnLabels = {"Model-Log Conformance measure"},
         returnTypes = {POEMSConformanceCheckingResult.class},
-        help = YourHelp.TEXT,
-        level = PluginLevel.Local
+        help = "BPMN Partially Ordered Earth Movers' Stochastic (POEMS) Conformance Checking. It constructs " +
+                "stochastic languages out of the event log (trace) nad the stochastic BPMN model (partially ordered trace)" +
+                " and then compares these languages using Earth Movers' Distance (EMD).",
+        level = PluginLevel.NightlyBuild,
+        categories = {PluginCategory.ConformanceChecking},
+        handlesCancel = true,
+        url = "https://github.com/promworkbench/POEMSConformanceCheckingForBPMN",
+        keywords = {"Stochastic Conformance Checking", "BPMN Parallel Semantics"},
+        quality = PluginQuality.Good,
+        userAccessible = true
 )
 public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
-
     /**
+     * The plug-in variant that runs in any context and uses the default parameters.
+     *
+     * @param context      The context to run in.
+     * @param sBpmnDiagram The first input.
+     * @param log          The second input.
+     * @return The output.
+     */
+    @UITopiaVariant(
+            affiliation = "RWTH Aachen",
+            author = "Aleksandar Kuzmanoski",
+            email = "aleksandar.kuzmanoski@rwth-aachen.de"
+    )
+    @PluginVariant(
+            variantLabel = "Samples the Stochastic BPMN with random sampler until it reaches the maximal achievable probability" +
+                    "with precision of four decimal points. Meaning if the model can generate 87% of the language (the rest is either in deadlock or livelock)" +
+                    "it will stop when it reached 86.9999% coverage.",
+            requiredParameterLabels = {
+                    0,
+                    1
+            }
+    )
+    public POEMSConformanceCheckingResult runDefault(
+            PluginContext context,
+            StochasticBPMNDiagram sBpmnDiagram,
+            XLog log
+    ) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException {
+        ActivityFactory activityFactory = ActivityFactory.getInstance();
+        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory);
+        EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
+        BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(sBpmnDiagram);
+        POEMSConformanceCheckingEMSC24Adapter emscSolver = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+        return emscSolver.calculateConformance(
+                modelLanguage,
+                logLanguage
+        );
+    }
+
+     /**
      * The plug-in variant that runs in any context and requires a parameters.
      *
      * @param context      The context to run in.
@@ -58,14 +102,30 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
      * @param parameters   The parameters to use.
      * @return The output.
      */
-    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
-            ".kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
-            requiredParameterLabels = {0, 1, 2}, help = "")
-    public POEMSCCResults run(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log,
-                              YourParameters parameters) {
+    @UITopiaVariant(
+            affiliation = "RWTH Aachen",
+            author = "Aleksandar Kuzmanoski",
+            email = "aleksandar.kuzmanoski@rwth-aachen.de"
+    )
+    @PluginVariant(
+            variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
+            requiredParameterLabels = {
+                    0,
+                    1,
+                    2
+            }
+    )
+    public POEMSCCResults run(
+            PluginContext context,
+            StochasticBPMNDiagram sBpmnDiagram,
+            XLog log,
+            YourParameters parameters
+    ) {
         // Apply the algorithm depending on whether a connection already exists.
-        XLogSimplifier simplifier = new BasicXLogSimplifier(new XEventNameClassifier(), new CachedActivityFactory());
+        XLogSimplifier simplifier = new BasicXLogSimplifier(
+                new XEventNameClassifier(),
+                new CachedActivityFactory()
+        );
         SimplifiedEventLog simpleLog = simplifier.simplify(log);
         System.out.println(simpleLog.getTotalTraces());
         for (SimplifiedEventLogVariant variant : simpleLog) {
@@ -76,95 +136,87 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
     }
 
     /**
-     * The plug-in variant that runs in any context and uses the default parameters.
-     *
-     * @param context      The context to run in.
-     * @param sBpmnDiagram The first input.
-     * @param log          The second input.
-     * @return The output.
-     */
-    @UITopiaVariant(affiliation = "RWTH Aachen", author = "Aleksandar Kuzmanoski", email = "aleksandar" +
-            ".kuzmanoski@rwth-aachen.de")
-    @PluginVariant(variantLabel = "Earth Movers' Stochastic Conformance Checking of Partially Ordered BPMN Paths",
-            requiredParameterLabels = {0, 1})
-    public POEMSConformanceCheckingResult runDefault(PluginContext context, StochasticBPMNDiagram sBpmnDiagram, XLog log) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException {
-        ActivityFactory activityFactory = ActivityFactory.getInstance();
-        StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory);
-        EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
-        BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(sBpmnDiagram);
-        POEMSConformanceCheckingEMSC24Adapter emscSolver = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
-        return emscSolver.calculateConformance(modelLanguage, logLanguage);
-    }
-
-    /**
      * The plug-in variant that runs in a UI context and uses a dialog to get the parameters.
      *
      * @param context The context to run in.
      * @param input1  The first input.
      * @param input2  The second input.
      * @return The output.
-     */
-    @UITopiaVariant(affiliation = "Your affiliation", author = "Your name", email = "Your e-mail address")
-    @PluginVariant(variantLabel = "Your plug-in name, dialog", requiredParameterLabels = {0, 1})
-    public YourOutput runUI(UIPluginContext context, YourFirstInput input1, YourSecondInput input2) {
+     *//*
+    @UITopiaVariant(
+            affiliation = "Your affiliation",
+            author = "Your name",
+            email = "Your e-mail address"
+    )
+    @PluginVariant(
+            variantLabel = "Your plug-in name, dialog",
+            requiredParameterLabels = {
+                    0,
+                    1
+            }
+    )
+    public YourOutput runUI(
+            UIPluginContext context,
+            YourFirstInput input1,
+            YourSecondInput input2
+    ) {
         // Get the default parameters.
-        YourParameters parameters = new YourParameters(input1, input2);
+        YourParameters parameters = new YourParameters(
+                input1,
+                input2
+        );
         // Get a dialog for this parameters.
-        YourDialog dialog = new YourDialog(context, input1, input2, parameters);
+        YourDialog dialog = new YourDialog(
+                context,
+                input1,
+                input2,
+                parameters
+        );
         // Show the dialog. User can now change the parameters.
-        InteractionResult result = context.showWizard("Your dialog title", true, true, dialog);
+        InteractionResult result = context.showWizard(
+                "Your dialog title",
+                true,
+                true,
+                dialog
+        );
         // User has close the dialog.
         if (result == InteractionResult.FINISHED) {
             // Apply the algorithm depending on whether a connection already exists.
-            return runConnections(context, input1, input2, parameters);
+            return runConnections(
+                    context,
+                    input1,
+                    input2,
+                    parameters
+            );
         }
         // Dialog got canceled.
         return null;
     }
 
-    /**
-     * The plug-in variant that allows one to test the dialog to get the parameters.
-     *
-     * @param context The context to run in.
-     * @return The output.
-     */
-    @UITopiaVariant(affiliation = "Your affiliation", author = "Your name", email = "Your e-mail address")
-    @PluginVariant(variantLabel = "Your plug-in name, dialog", requiredParameterLabels = {})
-    public YourOutput testUI(UIPluginContext context) {
-        // Create default inputs.
-        YourFirstInput input1 = new YourFirstInput();
-        YourSecondInput input2 = new YourSecondInput();
-        // Get the default parameters.
-        YourParameters parameters = new YourParameters(input1, input2);
-        // Get a dialog for this parameters.
-        YourDialog dialog = new YourDialog(context, input1, input2, parameters);
-        // Show the dialog. User can now change the parameters.
-        InteractionResult result = context.showWizard("Your dialog title", true, true, dialog);
-        // User has close the dialog.
-        if (result == InteractionResult.FINISHED) {
-            // Apply the algorithm depending on whether a connection already exists.
-            return runConnections(context, input1, input2, parameters);
-        }
-        // Dialog got canceled.
-        return null;
-    }
-
-    /**
+    *//**
      * Apply the algorithm depending on whether a connection already exists.
      *
      * @param context The context to run in.
      * @param input1  The first input.
      * @param input2  The second input.
      * @return The output.
-     */
-    private YourOutput runConnections(PluginContext context, YourFirstInput input1, YourSecondInput input2,
-                                      YourParameters parameters) {
+     *//*
+    private YourOutput runConnections(
+            PluginContext context,
+            YourFirstInput input1,
+            YourSecondInput input2,
+            YourParameters parameters
+    ) {
         if (parameters.isTryConnections()) {
             // Try to find a connection that matches the inputs and the parameters.
             Collection<YourConnection> connections;
             try {
                 connections = context.getConnectionManager().getConnections(
-                        YourConnection.class, context, input1, input2);
+                        YourConnection.class,
+                        context,
+                        input1,
+                        input2
+                );
                 for (YourConnection connection : connections) {
                     if (connection.getObjectWithRole(YourConnection.FIRSTINPUT)
                             .equals(input1) && connection.getObjectWithRole(YourConnection.SECONDINPUT)
@@ -178,14 +230,76 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
             }
         }
         // No connection found. Apply the algorithm to compute a fresh output result.
-        YourOutput output = apply(context, input1, input2, parameters);
+        YourOutput output = apply(
+                context,
+                input1,
+                input2,
+                parameters
+        );
         if (parameters.isTryConnections()) {
             // Store a connection containing the inputs, output, and parameters.
             context.getConnectionManager().addConnection(
-                    new YourConnection(input1, input2, output, parameters));
+                    new YourConnection(
+                            input1,
+                            input2,
+                            output,
+                            parameters
+                    ));
         }
         // Return the output.
         return output;
     }
+
+    *//**
+     * The plug-in variant that allows one to test the dialog to get the parameters.
+     *
+     * @param context The context to run in.
+     * @return The output.
+     *//*
+    @UITopiaVariant(
+            affiliation = "Your affiliation",
+            author = "Your name",
+            email = "Your e-mail address"
+    )
+    @PluginVariant(
+            variantLabel = "Your plug-in name, dialog",
+            requiredParameterLabels = {}
+    )
+    public YourOutput testUI(UIPluginContext context) {
+        // Create default inputs.
+        YourFirstInput input1 = new YourFirstInput();
+        YourSecondInput input2 = new YourSecondInput();
+        // Get the default parameters.
+        YourParameters parameters = new YourParameters(
+                input1,
+                input2
+        );
+        // Get a dialog for this parameters.
+        YourDialog dialog = new YourDialog(
+                context,
+                input1,
+                input2,
+                parameters
+        );
+        // Show the dialog. User can now change the parameters.
+        InteractionResult result = context.showWizard(
+                "Your dialog title",
+                true,
+                true,
+                dialog
+        );
+        // User has close the dialog.
+        if (result == InteractionResult.FINISHED) {
+            // Apply the algorithm depending on whether a connection already exists.
+            return runConnections(
+                    context,
+                    input1,
+                    input2,
+                    parameters
+            );
+        }
+        // Dialog got canceled.
+        return null;
+    }*/
 
 }

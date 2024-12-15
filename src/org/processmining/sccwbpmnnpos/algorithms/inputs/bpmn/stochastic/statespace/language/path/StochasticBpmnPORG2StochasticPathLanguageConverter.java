@@ -10,20 +10,20 @@ import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnS
 
 public interface StochasticBpmnPORG2StochasticPathLanguageConverter {
     static StochasticBpmnPORG2StochasticPathLanguageConverter getInstance(GraphSamplingType type,
-                                                                          StochasticLanguageGeneratorStopper stopper) {
-        return getInstance(type, stopper, ExecutableStochasticBpmnNodeFactory.getInstance());
+                                                                          StochasticLanguageGeneratorStopper stopper, int maxPathLength) {
+        return getInstance(type, stopper, ExecutableStochasticBpmnNodeFactory.getInstance(), maxPathLength);
     }
 
     static StochasticBpmnPORG2StochasticPathLanguageConverter getInstance(GraphSamplingType type,
                                                                           StochasticLanguageGeneratorStopper stopper,
-                                                                          ExecutableStochasticBpmnNodeFactory nodeFactory) {
+                                                                          ExecutableStochasticBpmnNodeFactory nodeFactory,  int maxPathLength) {
         BpmnPOReachabilityGraphPathConstructor pathConstructor = BpmnPOReachabilityGraphPathConstructor.getInstance(nodeFactory);
-        return new StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy.getInstance(type), stopper, pathConstructor);
+        return new StochasticBpmnPORG2StochasticPathLanguageConverterImpl(StochasticGraphPathSamplingStrategy.getInstance(type), stopper, pathConstructor, maxPathLength);
     }
 
     static StochasticBpmnPORG2StochasticPathLanguageConverter getInstance() {
         return getInstance(StochasticGraphPathSamplingStrategy.getDefaultType(),
-                StochasticLanguageGeneratorStopper.getInstance());
+                StochasticLanguageGeneratorStopper.getInstance(), 1000);
     }
 
     BpmnStochasticPOPathLanguage convert(ReachabilityGraph transitionSystem);
