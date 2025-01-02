@@ -1,8 +1,8 @@
 package org.processmining.sccwbpmnnpos.console;
 
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.NumElementsStochasticLanguageGeneratorStopper;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SampleSizeStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.trace.BpmnPartiallyOrderedTrace;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.stochastic.language.StochasticLanguageEntry;
@@ -22,7 +22,7 @@ public class StochasticTraceLanguageRunner {
         this.languageSize = languageSize;
         this.diagramReader = StochasticBPMNDiagramReader.fromFileName();
         this.languageGenerator =
-                StochasticLanguageGenerator.getInstance(StochasticGraphPathSamplingStrategy.GraphSamplingType.MOST_PROBABLE, new NumElementsStochasticLanguageGeneratorStopper(languageSize), 1000);
+                StochasticLanguageGenerator.getInstance(TansitionSamplingStrategyType.MOST_PROBABLE, new SampleSizeStoppingCriterion(languageSize), 1000);
     }
 
     public static void main(String[] args) throws Exception {

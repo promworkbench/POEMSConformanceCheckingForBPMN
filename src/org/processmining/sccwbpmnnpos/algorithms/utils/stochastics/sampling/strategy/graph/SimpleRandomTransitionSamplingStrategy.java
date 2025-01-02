@@ -1,14 +1,13 @@
 package org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph;
 
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.Sampler;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.PathOption;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;
 
 import java.util.*;
 
-public class SimpleRandomStochasticGraphPathSamplingStrategy<T extends PathOption<? extends StochasticObject, ?
-        extends StochasticObject>> implements StochasticGraphPathSamplingStrategy<T> {
+public class SimpleRandomTransitionSamplingStrategy<T extends StochasticTransition<? extends StochasticObject, ?
+        extends StochasticObject>> implements TransitionSamplingStrategy<T> {
     @Override
     public Sampler<T> getSampler() {
         return new Sampler<T>() {
@@ -42,7 +41,7 @@ public class SimpleRandomStochasticGraphPathSamplingStrategy<T extends PathOptio
                 Probability totalProbability = Probability.ZERO;
                 int i = 0;
                 for (T path : paths) {
-                    totalProbability = totalProbability.add(path.getPathOption().getProbability());
+                    totalProbability = totalProbability.add(path.getOption().getProbability());
                     if (totalProbability.compareTo(randomNumber) >= 0) {
                         paths.remove(i);
                         return path;

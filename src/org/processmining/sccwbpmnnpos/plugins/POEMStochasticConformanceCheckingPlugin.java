@@ -5,23 +5,18 @@ import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
-import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.*;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.YourAlgorithm;
+import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceChecking;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimplifier;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.impl.BasicXLogSimplifier;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
-import org.processmining.sccwbpmnnpos.connections.YourConnection;
-import org.processmining.sccwbpmnnpos.dialogs.YourDialog;
-import org.processmining.sccwbpmnnpos.help.YourHelp;
+import org.processmining.sccwbpmnnpos.dialogs.SBPMNSamplingConfigurationDialog;
 import org.processmining.sccwbpmnnpos.models.POEMSCCResults;
-import org.processmining.sccwbpmnnpos.models.YourFirstInput;
-import org.processmining.sccwbpmnnpos.models.YourOutput;
-import org.processmining.sccwbpmnnpos.models.YourSecondInput;
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.sccwbpmnnpos.models.log.SimplifiedEventLog;
@@ -31,8 +26,6 @@ import org.processmining.sccwbpmnnpos.models.utils.activity.factory.ActivityFact
 import org.processmining.sccwbpmnnpos.models.utils.activity.factory.CachedActivityFactory;
 import org.processmining.sccwbpmnnpos.parameters.YourParameters;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
-
-import java.util.Collection;
 
 @Plugin(
         name = "BPMN POEMS Conformance Checking",
@@ -44,13 +37,17 @@ import java.util.Collection;
         returnLabels = {"Model-Log Conformance measure"},
         returnTypes = {POEMSConformanceCheckingResult.class},
         help = "BPMN Partially Ordered Earth Movers' Stochastic (POEMS) Conformance Checking. It constructs " +
-                "stochastic languages out of the event log (trace) nad the stochastic BPMN model (partially ordered trace)" +
+                "stochastic languages out of the event log (trace) nad the stochastic BPMN model (partially ordered " +
+                "trace)" +
                 " and then compares these languages using Earth Movers' Distance (EMD).",
         level = PluginLevel.NightlyBuild,
         categories = {PluginCategory.ConformanceChecking},
         handlesCancel = true,
         url = "https://github.com/promworkbench/POEMSConformanceCheckingForBPMN",
-        keywords = {"Stochastic Conformance Checking", "BPMN Parallel Semantics"},
+        keywords = {
+                "Stochastic Conformance Checking",
+                "BPMN Parallel Semantics"
+        },
         quality = PluginQuality.Good,
         userAccessible = true
 )
@@ -69,8 +66,10 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
             email = "aleksandar.kuzmanoski@rwth-aachen.de"
     )
     @PluginVariant(
-            variantLabel = "Samples the Stochastic BPMN with random sampler until it reaches the maximal achievable probability" +
-                    "with precision of four decimal points. Meaning if the model can generate 87% of the language (the rest is either in deadlock or livelock)" +
+            variantLabel = "Samples the Stochastic BPMN with random sampler until it reaches the maximal achievable " +
+                    "probability" +
+                    "with precision of four decimal points. Meaning if the model can generate 87% of the language " +
+                    "(the rest is either in deadlock or livelock)" +
                     "it will stop when it reached 86.9999% coverage.",
             requiredParameterLabels = {
                     0,
@@ -78,22 +77,33 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
             }
     )
     public POEMSConformanceCheckingResult runDefault(
-            PluginContext context,
+            UIPluginContext context,
             StochasticBPMNDiagram sBpmnDiagram,
             XLog log
     ) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException {
+        SBPMNSamplingConfigurationDialog dialog = new SBPMNSamplingConfigurationDialog();
+        InteractionResult result = context.showWizard(
+                "POEMS Configuration",
+                true,
+                true,
+                dialog
+        );
+        if (result != InteractionResult.FINISHED) {
+            context.getFutureResult(0).cancel(false);
+            return null;
+        }
         ActivityFactory activityFactory = ActivityFactory.getInstance();
         StochasticLanguageGenerator languageGenerator = StochasticLanguageGenerator.getInstance(activityFactory);
         EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
         BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(sBpmnDiagram);
-        POEMSConformanceCheckingEMSC24Adapter emscSolver = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
-        return emscSolver.calculateConformance(
+        POEMSConformanceChecking conformanceChecker = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+        return conformanceChecker.calculateConformance(
                 modelLanguage,
                 logLanguage
         );
     }
 
-     /**
+    /**
      * The plug-in variant that runs in any context and requires a parameters.
      *
      * @param context      The context to run in.

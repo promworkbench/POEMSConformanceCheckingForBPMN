@@ -90,7 +90,7 @@ public class POEMSConformanceCheckingEMSC24Adapter implements POEMSConformanceCh
             }
         } else {
             distanceMatrix = distanceMatrix.clone();
-            DistanceMatrix<B, A> transposedDistanceMatrix = new TransposedDistanceMatrixWrapper(distanceMatrix);
+            DistanceMatrix<B, A> transposedDistanceMatrix = new TransposedDistanceMatrixWrapper<>(distanceMatrix);
             transposedDistanceMatrix.init(languageB, languageA, canceller);
             if (canceller.isCancelled()) {
                 return Double.NaN;

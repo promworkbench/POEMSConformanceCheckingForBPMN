@@ -28,7 +28,7 @@ public class VisualizeStochasticBPMNReachabilityGraphRunner {
 
     public static void main(String[] args) throws Exception {
         VisualizeStochasticBPMNReachabilityGraphRunner visualizer = new VisualizeStochasticBPMNReachabilityGraphRunner();
-        visualizer.visualize("/home/aleks/Documents/DataResources/ProcessMining/StochasticPetriNets/Logs/Sepsis Cases - Event Log/HM_MSAPE/sepsis_HM_MSAPE.pnml");
+        visualizer.visualize("/home/aleks/Documents/DataResources/ProcessMining/StochasticPetriNets/Logs/Payment process of Common Agricultural Policy (BPI Challenge 2018)/bpic18ref_DFM_FDE.pnml");
     }
 
     final void visualize(String bpmnPath) throws Exception {

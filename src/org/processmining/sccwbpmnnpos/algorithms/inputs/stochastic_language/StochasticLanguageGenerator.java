@@ -11,9 +11,9 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespa
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.GraphSamplingType;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TransitionSamplingStrategy;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.execution.node.factory.ExecutableStochasticBpmnNodeFactory;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.path.BpmnStochasticPOPathLanguage;
@@ -24,10 +24,10 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
 
 public interface StochasticLanguageGenerator {
     static StochasticLanguageGenerator getInstance(ActivityFactory activityFactory) {
-        return getInstance(activityFactory, new XEventNameClassifier(), StochasticGraphPathSamplingStrategy.getDefaultType(), StochasticLanguageGeneratorStopper.getInstance(), 1000);
+        return getInstance(activityFactory, new XEventNameClassifier(), TransitionSamplingStrategy.getDefaultType(), SamplingStoppingCriterion.getInstance(), 1000);
     }
 
-    static StochasticLanguageGenerator getInstance(ActivityFactory activityFactory, XEventClassifier defaultClassifier, GraphSamplingType samplingStrategy, StochasticLanguageGeneratorStopper stopper, int maxPathLength) {
+    static StochasticLanguageGenerator getInstance(ActivityFactory activityFactory, XEventClassifier defaultClassifier, TansitionSamplingStrategyType samplingStrategy, SamplingStoppingCriterion stopper, int maxPathLength) {
         ExecutableStochasticBpmnNodeFactory nodeFactory = ExecutableStochasticBpmnNodeFactory.getInstance();
         StochasticBpmn2POReachabilityGraphConverter sbpmn2Graph =
                 StochasticBpmn2POReachabilityGraphConverter.getInstance(nodeFactory);
@@ -43,16 +43,16 @@ public interface StochasticLanguageGenerator {
                 StochasticReachabilityGraphStaticAnalyzer.getInstance(BpmnMarking.class));
     }
 
-    static StochasticLanguageGenerator getInstance(XEventClassifier defaultClassifier, GraphSamplingType samplingStrategy, StochasticLanguageGeneratorStopper stopper, int maxPathLength) {
+    static StochasticLanguageGenerator getInstance(XEventClassifier defaultClassifier, TansitionSamplingStrategyType samplingStrategy, SamplingStoppingCriterion stopper, int maxPathLength) {
         return getInstance(ActivityFactory.getInstance(), defaultClassifier, samplingStrategy, stopper, maxPathLength);
     }
 
-    static StochasticLanguageGenerator getInstance(GraphSamplingType samplingStrategy, StochasticLanguageGeneratorStopper stopper, int maxPathLength) {
+    static StochasticLanguageGenerator getInstance(TansitionSamplingStrategyType samplingStrategy, SamplingStoppingCriterion stopper, int maxPathLength) {
         return getInstance(new XEventNameClassifier(), samplingStrategy, stopper, maxPathLength);
     }
 
     static StochasticLanguageGenerator getInstance() {
-        return getInstance(StochasticGraphPathSamplingStrategy.getDefaultType(), StochasticLanguageGeneratorStopper.getInstance(), 1000);
+        return getInstance(TransitionSamplingStrategy.getDefaultType(), SamplingStoppingCriterion.getInstance(), 1000);
     }
 
     BpmnStochasticPOPathLanguage poPath(final StochasticBPMNDiagram diagram) throws BpmnNoOptionToCompleteException,

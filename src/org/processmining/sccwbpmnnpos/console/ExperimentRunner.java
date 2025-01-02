@@ -3,7 +3,6 @@ package org.processmining.sccwbpmnnpos.console;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.models.graphbased.directed.transitionsystem.ReachabilityGraph;
-import org.processmining.plugins.InductiveMiner.Pair;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceChecking;
 import org.processmining.sccwbpmnnpos.algorithms.conformance_checking.poems.POEMSConformanceCheckingEMSC24Adapter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
@@ -12,12 +11,10 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespa
 import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimplifier;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.simplified.SimplifiedLog2StochasticLanguageConverter;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.xlog.Xlog2StochasticTraceLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.ProbabilityMassStochasticLanguageGeneratorStopper;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy.GraphSamplingType;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SampleProbabilityMassStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
@@ -188,8 +185,8 @@ public class ExperimentRunner {
                 maxTraceSize = Math.max(maxTraceSize, trace.getElement().size());
             }
             StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
-                    StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, GraphSamplingType.MOST_PROBABLE,
-                    new ProbabilityMassStochasticLanguageGeneratorStopper(requiredProbability), maxTraceSize);
+                    StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(activityFactory, TansitionSamplingStrategyType.MOST_PROBABLE,
+                    new SampleProbabilityMassStoppingCriterion(requiredProbability), maxTraceSize);
             BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.convert(fixedRg);
 
             POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);

@@ -10,9 +10,10 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.bpmn.stochastic.statespa
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.NumElementsStochasticLanguageGeneratorStopper;
-import org.processmining.sccwbpmnnpos.algorithms.inputs.stochastic_language.stopping.StochasticLanguageGeneratorStopper;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.StochasticGraphPathSamplingStrategy;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SampleSizeStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TransitionSamplingStrategy;
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.sccwbpmnnpos.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
@@ -30,8 +31,8 @@ public class ExampleRunner {
 
     public static void main(String[] args) {
         // Parameters
-        StochasticGraphPathSamplingStrategy.GraphSamplingType defaultType = StochasticGraphPathSamplingStrategy.getDefaultType();
-        StochasticLanguageGeneratorStopper stopper = new NumElementsStochasticLanguageGeneratorStopper(10000);
+        TansitionSamplingStrategyType defaultType = TransitionSamplingStrategy.getDefaultType();
+        SamplingStoppingCriterion stopper = new SampleSizeStoppingCriterion(10000);
         XEventClassifier defaultClassifier = new XEventNameClassifier();
 
 
@@ -45,13 +46,15 @@ public class ExampleRunner {
 
         try {
             final XLog log = logReader.read
-                    ("/home/aleks/Documents/DataResources/ProcessMining/Logs/Handling of Compensation Requests/Handling of Compensation Requests.xes");
-            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/Logs/Handling of Compensation Requests/Hand Made/Instance - SBPMN - Handling of Compensation Requests Simplified.bpmn");
+                    ("/home/aleks/Documents/DataResources/ProcessMining/Logs/POEMS Evaluation Example/Log3.xes");
+            StochasticBPMNDiagram diagram = diagramReader.read("/home/aleks/Documents/Learn/Playground/obsidianTest/alkuzman/Research/Concepts/Process Management/Process Mining/Process Models/BPMN/Specializations/Stochastic/Instances/POEMS Evaluation Examples/flower.bpmn");
             ReachabilityGraph rg = sbpmn2Rg.convert(diagram);
             StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgAnalysisResult = rgStaticAnalyzer.analyze(rg);
             ReachabilityGraph newRg = rgAnalysisResult.getFixedReachabilityGraph();
             EventLogStochasticTOTraceLanguage stochasticLogLanguage = languageGenerator.trace(log);
             BpmnStochasticPOTraceLanguage stochasticModelLanguage = languageGenerator.poTrace(newRg);
+            System.out.println(stochasticLogLanguage);
+            System.out.println(stochasticModelLanguage.toGraphViz());
             POEMSConformanceCheckingResult poemsConformanceCheckingResult = poemsConformanceCheckingEmsc24Adapter.calculateConformance(stochasticModelLanguage, stochasticLogLanguage);
             System.out.println(poemsConformanceCheckingResult);
         } catch (Exception e) {
