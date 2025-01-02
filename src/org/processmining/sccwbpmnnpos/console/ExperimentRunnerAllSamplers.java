@@ -17,9 +17,8 @@ import org.processmining.sccwbpmnnpos.algorithms.inputs.log.simplifier.XLogSimpl
 import org.processmining.sccwbpmnnpos.algorithms.inputs.log.stohastic_language.simplified.SimplifiedLog2StochasticLanguageConverter;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.sccwbpmnnpos.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.CompositeSamplingStoppingCriterion;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SampleProbabilityMassStoppingCriterion;
-import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SampleSizeStoppingCriterion;
+import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterion;
 import org.processmining.sccwbpmnnpos.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
 import org.processmining.sccwbpmnnpos.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.sccwbpmnnpos.models.bpmn.execution.marking.BpmnMarking;
@@ -47,7 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ExperimentRunner {
+public class ExperimentRunnerAllSamplers {
     private static final Logger logger = LoggerFactory.getLogger(ExampleRunner.class);
     private final ObjectReader<File, XLog> logReader;
     private final SimplifiedLog2StochasticLanguageConverter slog2slConverter;
@@ -56,7 +55,7 @@ public class ExperimentRunner {
     private final StochasticBpmn2POReachabilityGraphConverter sbpmn2Rg;
     private final StochasticReachabilityGraphStaticAnalyzer<BpmnMarking> rgAnalyzer;
 
-    public ExperimentRunner() {
+    public ExperimentRunnerAllSamplers() {
         this.logReader = XLogReader.fromFile();
         this.slog2slConverter = SimplifiedLog2StochasticLanguageConverter.getInstance();
         this.modelReader = StochasticBPMNDiagramReader.fromFile();
@@ -82,7 +81,7 @@ public class ExperimentRunner {
             modelsFolder = new File(args[1]);
             resultsFolder = new File(args[2]);
         }
-        new ExperimentRunner().runExperiments(
+        new ExperimentRunnerAllSamplers().runExperiments(
                 logsFolder,
                 modelsFolder,
                 resultsFolder
@@ -129,7 +128,6 @@ public class ExperimentRunner {
                     String[] modelFileParts = modelFileVariant.getValue().getName().split("\\.");
                     String extension = modelFileParts[modelFileParts.length - 1];
                     StochasticBPMNDiagram model;
-                    System.out.println("Run: " + modelFileVariant.getValue().getParentFile().getName());
                     if (Objects.equals(
                             extension,
                             "bpmn"
@@ -138,30 +136,31 @@ public class ExperimentRunner {
                     } else {
                         model = spnReader.read(modelFileVariant.getValue());
                     }
+//                    model = modelReader.read(modelFileVariant.getValue());
+                    System.out.println("Run: " + modelFileVariant.getValue().getParentFile().getName());
                     try {
-                        for (double p = 0.1; p <= 1; p += 0.1) {
-//                        for (int numTrace : new int[]{10, 20, 30, 50, 100, 150, 200, 250, 300, 500}) {
+                        for (TansitionSamplingStrategyType samplingType : TansitionSamplingStrategyType.values()) {
                             ExperimentResult result =
                                     runExperiments(
                                             logLanguage,
                                             model,
                                             activityFactory,
-                                            TansitionSamplingStrategyType.MOST_PROBABLE,
-                                            Probability.of(p),
-                                            Integer.MAX_VALUE
+                                            samplingType
                                     );
-//                        System.out.printf("%s: %s\n", modelFileVariant.getKey(), result);
+                            System.out.printf(
+                                    "%s: %s\n",
+                                    modelFileVariant.getKey(),
+                                    result
+                            );
                             recordModelInfo(
-                                    logFile.getKey() + "_" + modelFileVariant.getKey() + "_" + p,
+                                    logFile.getKey() + "_" + modelFileVariant.getKey(),
                                     modelInfoTB,
                                     result
                             );
                             recordResults(
-                                    logFile.getKey() + "_" + modelFileVariant.getKey() + "_" + p,
-                                    resultsInfoTB
-                                    ,
-                                    result,
-                                    modelFileVariant.getKey()
+                                    logFile.getKey() + "_" + modelFileVariant.getKey(),
+                                    resultsInfoTB,
+                                    result
                             );
                             writeResults(
                                     resultFolderConcreteRun,
@@ -313,66 +312,57 @@ public class ExperimentRunner {
             EventLogStochasticTOTraceLanguage logLanguage,
             StochasticBPMNDiagram bpmnDiagram,
             ActivityFactory activityFactory,
-            TansitionSamplingStrategyType samplingType,
-            Probability requiredProbability,
-            int numTrace
+            TansitionSamplingStrategyType samplingType
     ) {
         try {
-            long time = 0;
-            StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgStaticAnalysis = null;
-            BpmnStochasticPOTraceLanguage modelLanguage = null;
-            POEMSConformanceCheckingResult result = null;
-            int countRuns = 1;
-            for (int i = 0; i < countRuns; ++i) {
-                long startTime = System.currentTimeMillis();
-                ReachabilityGraph rg = sbpmn2Rg.convert(bpmnDiagram);
-                rgStaticAnalysis = rgAnalyzer.analyze(rg);
-                ReachabilityGraph fixedRg = rgStaticAnalysis.getFixedReachabilityGraph();
-                requiredProbability = requiredProbability == null ?
-                        rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.000001)) :
-                        requiredProbability;
+            long startTime = System.currentTimeMillis();
+            ReachabilityGraph rg = sbpmn2Rg.convert(bpmnDiagram);
+            StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgStaticAnalysis = rgAnalyzer.analyze(rg);
+            ReachabilityGraph fixedRg = rgStaticAnalysis.getFixedReachabilityGraph();
+            Probability requiredProbability =
+                    rgStaticAnalysis.getProbabilityToComplete().subtract(Probability.of(0.000001));
 
-//                int maxTraceSize = 0;
-//                for (StochasticLanguageEntry<Activity, EventLogTrace> trace :
-//                        logLanguage) {
-//                    maxTraceSize = Math.max(maxTraceSize, trace.getElement().size());
-//                }
-//                System.out.println(maxTraceSize);
-
-                StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
-                        StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(
-                                activityFactory,
-                                samplingType,
-                                new CompositeSamplingStoppingCriterion(Arrays.asList(
-                                        new SampleProbabilityMassStoppingCriterion(requiredProbability),
-                                        new SampleSizeStoppingCriterion(numTrace)
-                                )),
-                                Integer.MAX_VALUE
-                        );
-                modelLanguage = languageGenerator.convert(fixedRg);
-
-                POEMSConformanceChecking conformanceChecking =
-                        new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
-                result = conformanceChecking.calculateConformance(
-                        modelLanguage,
-                        logLanguage
+            SamplingStoppingCriterion stopper;
+            ExperimentConfig experimentConfig;
+            if (samplingType.equals(TansitionSamplingStrategyType.MOST_PROBABLE)) {
+                stopper = new SampleProbabilityMassStoppingCriterion(requiredProbability);
+                experimentConfig = new ExperimentConfig(
+                        0.000001,
+                        samplingType,
+                        "Probability",
+                        requiredProbability.doubleValue()
                 );
-
-                long endTime = System.currentTimeMillis();
-                time += endTime - startTime;
+            } else {
+                stopper = SamplingStoppingCriterion.getInstance();
+                experimentConfig = new ExperimentConfig(
+                        0.000001,
+                        samplingType,
+                        "Size",
+                        1000
+                );
             }
+            StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
+                    StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(
+                            activityFactory,
+                            samplingType,
+                            stopper,
+                            1000
+                    );
+            BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.convert(fixedRg);
+
+            POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+            POEMSConformanceCheckingResult result = conformanceChecking.calculateConformance(
+                    modelLanguage,
+                    logLanguage
+            );
+            long endTime = System.currentTimeMillis();
             return new ExperimentResult(
                     bpmnDiagram,
                     result,
                     rgStaticAnalysis,
                     modelLanguage,
-                    time / countRuns,
-                    new ExperimentConfig(
-                            0.000001,
-                            samplingType,
-                            "Probability",
-                            requiredProbability.doubleValue()
-                    )
+                    endTime - startTime,
+                    experimentConfig
             );
         } catch (BpmnUnboundedException | BpmnNoOptionToCompleteException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -438,8 +428,7 @@ public class ExperimentRunner {
     private static void recordResults(
             String key,
             ImmutableTable.Builder<String, String, String> resultsInfoTB,
-            ExperimentResult result,
-            String modelFileVariantKey
+            ExperimentResult result
     ) {
         resultsInfoTB.put(
                 key,
@@ -484,11 +473,6 @@ public class ExperimentRunner {
                 key,
                 "Stopping Value",
                 String.valueOf(result.experimentConfig.stoppingValue)
-        );
-        resultsInfoTB.put(
-                key,
-                "Alg",
-                modelFileVariantKey
         );
     }
 
