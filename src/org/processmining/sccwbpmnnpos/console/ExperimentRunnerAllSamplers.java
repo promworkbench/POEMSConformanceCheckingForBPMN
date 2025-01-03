@@ -1,8 +1,8 @@
 package org.processmining.sccwbpmnnpos.console;
 
+import au.com.bytecode.opencsv.CSVWriter;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.opencsv.CSVWriter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
@@ -47,7 +47,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExperimentRunnerAllSamplers {
-    private static final Logger logger = LoggerFactory.getLogger(ExampleRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExperimentRunnerAllSamplers.class);
     private final ObjectReader<File, XLog> logReader;
     private final SimplifiedLog2StochasticLanguageConverter slog2slConverter;
     private final ObjectReader<File, StochasticBPMNDiagram> modelReader;
@@ -170,7 +170,7 @@ public class ExperimentRunnerAllSamplers {
                             );
                         }
                     } catch (Exception e) {
-                        logger.error(
+                        LOGGER.error(
                                 String.format(
                                         "Failure to execute %s",
                                         modelFileVariant.getValue().getParentFile().getName()
@@ -180,7 +180,7 @@ public class ExperimentRunnerAllSamplers {
                     }
                 }
             } catch (Exception e) {
-                logger.error(
+                LOGGER.error(
                         String.format(
                                 "Failure to read log from %s",
                                 logFile.getValue().getPath()

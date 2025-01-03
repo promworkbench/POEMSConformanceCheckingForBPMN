@@ -23,18 +23,11 @@
             <artifact pattern="https://github.com/promworkbench/Releases/raw/main/Libraries/[module]/[revision]/[artifact]_[revision].[ext]" />
         </url>
         <ibiblio name="maven2" m2compatible="true" root="https://repo1.maven.org/maven2/"/>
-        <filesystem name="local">
-            <ivy
-                    pattern="${ivy.local.default.root}/${ivy.local.default.ivy.pattern}" />
-            <artifact
-                    pattern="${ivy.local.default.root}/${ivy.local.default.artifact.pattern}" />
-        </filesystem>
         <chain name="default" returnFirst="true">
             <resolver ref="prom" />
             <resolver ref="prom-svn" />
             <resolver ref="prom-libs" />
             <resolver ref="maven2" />
-<!--            <resolver ref="local" />-->
         </chain>
     </resolvers>
 </ivysettings>
