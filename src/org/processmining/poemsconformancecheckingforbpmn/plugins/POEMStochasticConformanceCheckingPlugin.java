@@ -17,6 +17,7 @@ import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.log.s
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
 import org.processmining.poemsconformancecheckingforbpmn.dialogs.SBPMNSamplingConfigurationDialog;
 import org.processmining.poemsconformancecheckingforbpmn.models.POEMSCCResults;
+import org.processmining.poemsconformancecheckingforbpmn.models.StochasticBPMNConformanceCheckingResult;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.poemsconformancecheckingforbpmn.models.log.SimplifiedEventLog;
@@ -35,7 +36,7 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
                 "Model Probability Mass"
         },
         returnLabels = {"Model-Log Conformance measure"},
-        returnTypes = {POEMSConformanceCheckingResult.class},
+        returnTypes = {StochasticBPMNConformanceCheckingResult.class},
         help = "BPMN Partially Ordered Earth Movers' Stochastic (POEMS) Conformance Checking. It constructs " +
                 "stochastic languages out of the event log (trace) nad the stochastic BPMN model (partially ordered " +
                 "trace)" +
@@ -76,7 +77,7 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
                     1
             }
     )
-    public POEMSConformanceCheckingResult runDefault(
+    public StochasticBPMNConformanceCheckingResult runDefault(
             UIPluginContext context,
             StochasticBPMNDiagram sBpmnDiagram,
             XLog log
@@ -97,10 +98,11 @@ public class POEMStochasticConformanceCheckingPlugin extends YourAlgorithm {
         EventLogStochasticTOTraceLanguage logLanguage = languageGenerator.trace(log);
         BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.poTrace(sBpmnDiagram);
         POEMSConformanceChecking conformanceChecker = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
-        return conformanceChecker.calculateConformance(
+        POEMSConformanceCheckingResult ccResult = conformanceChecker.calculateConformance(
                 modelLanguage,
                 logLanguage
         );
+        return includeHTMLTags -> String.format("The conformance value lies between %s and %s", ccResult.getConformanceLowerBound(), ccResult.getConformanceUpperBound());
     }
 
     /**

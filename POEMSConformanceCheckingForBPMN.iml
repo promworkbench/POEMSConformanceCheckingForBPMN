@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
   <component name="EclipseModuleManager">
-    <conelement value="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?project=NewPackageIvy&amp;ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=ivysettings.xml&amp;loadSettingsOnDemand=false&amp;ivyUserDir=&amp;propertyFiles=" />
+    <conelement value="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?project=POEMSConformanceCheckingForBPMN&amp;ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=ivysettings.xml&amp;loadSettingsOnDemand=false&amp;ivyUserDir=&amp;propertyFiles=" />
     <src_description expected_position="0">
       <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
       <src_folder value="file://$MODULE_DIR$/tests/src-test" expected_position="1" />
@@ -25,7 +25,7 @@
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="library" name="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?project=NewPackageIvy&amp;ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=ivysettings.xml&amp;loadSettingsOnDemand=false&amp;ivyUserDir=&amp;propertyFiles=" level="application" />
+    <orderEntry type="library" name="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?project=POEMSConformanceCheckingForBPMN&amp;ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=ivysettings.xml&amp;loadSettingsOnDemand=false&amp;ivyUserDir=&amp;propertyFiles=" level="application" />
     <orderEntry type="module-library">
       <library name="IvyIDEA">
         <CLASSES>
