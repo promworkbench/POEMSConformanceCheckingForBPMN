@@ -1,0 +1,10 @@
+package org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.stochastic.language.trace;
+
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
+import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
+import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
+
+public interface StochasticBpmn2POStochasticTraceLanguageConverter {
+    BpmnStochasticPOTraceLanguage convert(final StochasticBPMNDiagram bpmnDiagram) throws BpmnNoOptionToCompleteException, BpmnUnboundedException;
+}

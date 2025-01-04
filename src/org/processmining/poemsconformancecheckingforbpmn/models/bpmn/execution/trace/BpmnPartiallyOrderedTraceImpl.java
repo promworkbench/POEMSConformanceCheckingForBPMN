@@ -1,0 +1,7 @@
+package org.processmining.poemsconformancecheckingforbpmn.models.bpmn.execution.trace;
+
+import org.processmining.poemsconformancecheckingforbpmn.models.utils.activity.Activity;
+import org.processmining.poemsconformancecheckingforbpmn.models.utils.ordered_set.partial.eventbased.RepetitiveEventBasedPartiallyOrderedSet;
+
+public class BpmnPartiallyOrderedTraceImpl extends RepetitiveEventBasedPartiallyOrderedSet<Activity> implements BpmnPartiallyOrderedTrace {
+}
