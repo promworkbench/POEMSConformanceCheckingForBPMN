@@ -1,4 +1,4 @@
-<project name="EarthMoversPartiallyOrderedStochasticConformanceCheckingBPMN" default="Compile Sources" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="POEMSConformanceCheckingForBPMN" default="Compile Sources" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 	<!-- set global properties for this build -->
 	<property environment="env" />
 	<property name="src" location="src" />
@@ -8,7 +8,7 @@
 	<property name="dist" location="dist" />
 	<property name="release" location="latestrelease" />
 	<property name="version" value="${env.major_minor}.${env.GITHUB_RUN_NUMBER}" />
-	<property name="project" value="EarthMoversPartiallyOrderedStochasticConformanceCheckingBPMN" />
+	<property name="project" value="POEMSConformanceCheckingForBPMN" />
 
 	<property name="author" value="A. Kuzmanoski" />
 	<property name="organization" value="RWTH Aachen University" />
