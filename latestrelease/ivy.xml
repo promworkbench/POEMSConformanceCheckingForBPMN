@@ -1,7 +1,7 @@
 <ivy-module version="2.0">
     <info organisation="prom" module="POEMSConformanceCheckingForBPMN" revision="latest">
         <description>
-            Version 6.15.5
+            Version 6.15.7
         </description>
     </info>
     <configurations>
@@ -17,10 +17,8 @@
         <dependency org="prom" name="BasicUtils" rev="latest" changing="true" transitive="true"/>
         <dependency org="prom" name="Widgets" rev="latest" changing="true" transitive="true"/>
         <dependency org="prom" name="Log" rev="latest" changing="true" transitive="true"/>
-        <dependency org="prom" name="StochasticBPMN" rev="latest" changing="true"
-                    transitive="true"/>
-        <dependency org="prom" name="EarthMoversStochasticConformanceChecking" rev="latest" changing="true"
-                    transitive="true"/>
+        <dependency org="prom" name="StochasticBPMN" rev="latest" changing="true" transitive="true"/>
+        <dependency org="prom" name="EarthMoversStochasticConformanceChecking" rev="latest" changing="true" transitive="true"/>
 
         <!-- Third party libraries. These may span multiple lines. -->
         <!-- Please uncomment the second line in the resolve target in your build.xml file
