@@ -1,6 +1,5 @@
-package org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.stochastic_language.stopping;
+package org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping;
 
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterion;
 import org.processmining.poemsconformancecheckingforbpmn.models.stochastic.Sample;
 
 public class ElapsedTimeSamplingStoppingCriterion implements SamplingStoppingCriterion {

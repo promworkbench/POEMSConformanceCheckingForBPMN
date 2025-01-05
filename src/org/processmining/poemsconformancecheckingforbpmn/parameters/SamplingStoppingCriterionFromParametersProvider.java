@@ -23,25 +23,20 @@ public class SamplingStoppingCriterionFromParametersProvider implements Sampling
     }
 
     @Override
-    public SamplingStoppingCriterion get(Probability populationProbability) {
+    public SamplingStoppingCriterion provide(Probability populationProbability) {
         List<SamplingStoppingCriterion> stoppingCriteria = new LinkedList<>();
-        stoppingCriteria.add(new SamplingStoppingCriterion() {
-            @Override
-            public boolean shouldStop(Sample<?> sample) {
-                return canceller.get();
-            }
-        });
+        stoppingCriteria.add(sample -> canceller.get());
         for (Map.Entry<SamplingStoppingCriterionType, Object> entry :
                 parameters.getSamplingStoppingCriteriaParameters().entrySet()) {
             switch (entry.getKey()) {
                 case SAMPLE_SIZE:
-                    new SampleSizeStoppingCriterion(((SampleSizeParameters) entry.getValue()).getSize());
+                    stoppingCriteria.add(new SampleSizeStoppingCriterion(((SampleSizeParameters) entry.getValue()).getSize()));
                     break;
                 case SAMPLE_PROBABILITY:
-                    new SampleProbabilityMassStoppingCriterion(
+                    stoppingCriteria.add(new SampleProbabilityMassStoppingCriterion(
                             populationProbability,
                             ((SampleProbabilityPrecisionParameters) entry.getValue()).getPrecision()
-                    );
+                    ));
                     break;
             }
         }

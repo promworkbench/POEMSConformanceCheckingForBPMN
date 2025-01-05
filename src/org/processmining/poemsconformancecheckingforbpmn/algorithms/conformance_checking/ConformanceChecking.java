@@ -4,6 +4,6 @@ import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 
-public interface ConformanceChecking<MODEL, LOG> {
-    POEMSConformanceCheckingResult calculateConformance(final MODEL model, final LOG log) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException;
+public interface ConformanceChecking<MODEL, LOG, RESULT> {
+    RESULT calculateConformance(final MODEL model, final LOG log) throws BpmnNoOptionToCompleteException, BpmnUnboundedException, InterruptedException;
 }

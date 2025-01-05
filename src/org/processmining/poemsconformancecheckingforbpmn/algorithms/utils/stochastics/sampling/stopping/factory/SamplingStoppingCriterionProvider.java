@@ -4,5 +4,9 @@ import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stocha
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 
 public interface SamplingStoppingCriterionProvider {
-    SamplingStoppingCriterion get(Probability populationProbability);
+    static SamplingStoppingCriterionProvider getInstance() {
+        return probability -> SamplingStoppingCriterion.getInstance();
+    }
+
+    SamplingStoppingCriterion provide(Probability populationProbability);
 }

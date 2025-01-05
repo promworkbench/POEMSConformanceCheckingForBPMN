@@ -3,7 +3,7 @@ package org.processmining.poemsconformancecheckingforbpmn.dialogs;
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.framework.util.ui.widgets.ProMPropertiesPanel;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterionType;
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.transition.TansitionSamplingStrategyType;
 import org.processmining.poemsconformancecheckingforbpmn.parameters.*;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 

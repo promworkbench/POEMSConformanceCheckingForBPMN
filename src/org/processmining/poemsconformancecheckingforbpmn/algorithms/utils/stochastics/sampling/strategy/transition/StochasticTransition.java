@@ -1,4 +1,4 @@
-package org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.graph;
+package org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.transition;
 
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
 import org.processmining.stochasticbpmn.models.stochastic.StochasticObject;

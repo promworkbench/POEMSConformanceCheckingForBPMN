@@ -20,15 +20,25 @@ import org.processmining.poemsconformancecheckingforbpmn.models.trace.total_orde
 import org.processmining.poemsconformancecheckingforbpmn.models.utils.activity.Activity;
 import org.processmining.poemsconformancecheckingforbpmn.models.utils.activity.factory.ActivityFactory;
 
+import java.util.function.Supplier;
+
 public class POEMSConformanceCheckingEMSC24Adapter implements POEMSConformanceChecking {
     private final ActivityFactory activityFactory;
+    private final Supplier<Boolean> canceller;
 
-    public POEMSConformanceCheckingEMSC24Adapter(ActivityFactory activityFactory) {
+    public POEMSConformanceCheckingEMSC24Adapter(
+            ActivityFactory activityFactory,
+            Supplier<Boolean> canceller
+    ) {
         this.activityFactory = activityFactory;
+        this.canceller = canceller;
     }
 
     @Override
-    public <A extends Activity, PO extends PartiallyOrderedTrace<A>, TO extends TotallyOrderedTrace<A>> POEMSConformanceCheckingResult calculateConformance(final StochasticPOTraceLanguage<A, PO> poStochasticLanguage, final StochasticTOTraceLanguage<A, TO> stochasticLanguage) throws InterruptedException {
+    public <A extends Activity, PO extends PartiallyOrderedTrace<A>, TO extends TotallyOrderedTrace<A>> POEMSConformanceCheckingResult calculateConformance(
+            final StochasticPOTraceLanguage<A, PO> poStochasticLanguage,
+            final StochasticTOTraceLanguage<A, TO> stochasticLanguage
+    ) throws InterruptedException {
         StochasticTracePOLanguageConverter<A, PO> poLanguageConverter =
                 StochasticTracePOLanguageConverter.getInstance();
         StochasticTraceTOLanguageConverter<A, TO> toLanguageConverter =
@@ -39,62 +49,135 @@ public class POEMSConformanceCheckingEMSC24Adapter implements POEMSConformanceCh
             activity2IndexKey.reIndex();
         }
 
-        StochasticLanguage<PartialOrderCertain> modelLanguage = poLanguageConverter.toEMSC24(poStochasticLanguage,
-                activity2IndexKey);
-        StochasticLanguage<TotalOrder> logLanguage = toLanguageConverter.toEMSC24(stochasticLanguage,
-                activity2IndexKey);
+        StochasticLanguage<PartialOrderCertain> modelLanguage = poLanguageConverter.toEMSC24(
+                poStochasticLanguage,
+                activity2IndexKey
+        );
+        StochasticLanguage<TotalOrder> logLanguage = toLanguageConverter.toEMSC24(
+                stochasticLanguage,
+                activity2IndexKey
+        );
 
-        EMSCParametersLogTotalModelPartialCertainDefault parameters = new EMSCParametersLogTotalModelPartialCertainDefault();
-        Pair<Double, Double> result = compute(parameters,
-                logLanguage, modelLanguage, () -> false);
+        EMSCParametersLogTotalModelPartialCertainDefault parameters =
+                new EMSCParametersLogTotalModelPartialCertainDefault();
+        Pair<Double, Double> result = compute(
+                parameters,
+                logLanguage,
+                modelLanguage,
+                canceller::get
+        );
 
-        return new BpmnPoemsPOEMSConformanceCheckingResult(result.getA(), result.getB());
+        return new BpmnPoemsPOEMSConformanceCheckingResult(
+                result.getA(),
+                result.getB()
+        );
     }
 
-    public static <A extends Order, B extends PartialOrder> Pair<Double, Double> compute(EMSCParametersBounds<A, B> parameters, StochasticLanguage<A> languageA, StochasticLanguage<B> languageB, ProMCanceller canceller) throws InterruptedException {
+    public static <A extends Order, B extends PartialOrder> Pair<Double, Double> compute(
+            EMSCParametersBounds<A, B> parameters,
+            StochasticLanguage<A> languageA,
+            StochasticLanguage<B> languageB,
+            ProMCanceller canceller
+    ) throws InterruptedException {
         if (languageA.size() > 0 && languageB.size() > 0) {
             double truncatedMass = 1.0 - StochasticLanguageUtils.getSumProbability(languageB);
             if (parameters.getDistanceMatrix() == null) {
-                double higher = compute(parameters, languageA, languageB, parameters.getDistanceMatrixBest(), canceller);
+                double higher = compute(
+                        parameters,
+                        languageA,
+                        languageB,
+                        parameters.getDistanceMatrixBest(),
+                        canceller
+                );
                 if (!canceller.isCancelled() && !Double.isNaN(higher)) {
                     double lower = higher - truncatedMass;
-                    return Pair.of(lower, higher);
+                    return Pair.of(
+                            lower,
+                            higher
+                    );
                 } else {
                     return null;
                 }
             } else {
-                double higher = compute(parameters, languageA, languageB, parameters.getDistanceMatrixBest(), canceller);
+                double higher = compute(
+                        parameters,
+                        languageA,
+                        languageB,
+                        parameters.getDistanceMatrixBest(),
+                        canceller
+                );
                 if (!canceller.isCancelled() && !Double.isNaN(higher)) {
-                    double lower = compute(parameters, languageA, languageB, parameters.getDistanceMatrix(), canceller) - truncatedMass;
-                    return !canceller.isCancelled() && !Double.isNaN(higher) ? Pair.of(lower, higher) : null;
+                    double lower = compute(
+                            parameters,
+                            languageA,
+                            languageB,
+                            parameters.getDistanceMatrix(),
+                            canceller
+                    ) - truncatedMass;
+                    return !canceller.isCancelled() && !Double.isNaN(higher) ? Pair.of(
+                            lower,
+                            higher
+                    ) : null;
                 } else {
                     return null;
                 }
             }
         } else {
-            return languageA.size() == 0 && languageB.size() == 0 ? Pair.of((Double) null, 1.0) : Pair.of((Double)null, 0.0);
+            return languageA.size() == 0 && languageB.size() == 0 ? Pair.of(
+                    (Double) null,
+                    1.0
+            ) : Pair.of(
+                    (Double) null,
+                    0.0
+            );
         }
     }
 
-    public static <B extends PartialOrder, A extends Order> double compute(EMSCParametersBounds<A, B> parameters, StochasticLanguage<A> languageA, StochasticLanguage<B> languageB, DistanceMatrix<A, B> distanceMatrix, ProMCanceller canceller) throws InterruptedException {
+    public static <B extends PartialOrder, A extends Order> double compute(
+            EMSCParametersBounds<A, B> parameters,
+            StochasticLanguage<A> languageA,
+            StochasticLanguage<B> languageB,
+            DistanceMatrix<A, B> distanceMatrix,
+            ProMCanceller canceller
+    ) throws InterruptedException {
         if (StochasticLanguageUtils.getSumProbability(languageA) < StochasticLanguageUtils.getSumProbability(languageB)) {
             distanceMatrix = distanceMatrix.clone();
-            distanceMatrix.init(languageA, languageB, canceller);
+            distanceMatrix.init(
+                    languageA,
+                    languageB,
+                    canceller
+            );
             if (canceller.isCancelled()) {
                 return Double.NaN;
             } else {
-                Pair<ReallocationMatrix, Double> p = ComputeReallocationMatrix2.computeWithDistanceMatrixInitialised(languageA, languageB, distanceMatrix, parameters, canceller);
-                return !canceller.isCancelled() && p != null ? (Double)p.getB() : Double.NaN;
+                Pair<ReallocationMatrix, Double> p = ComputeReallocationMatrix2.computeWithDistanceMatrixInitialised(
+                        languageA,
+                        languageB,
+                        distanceMatrix,
+                        parameters,
+                        canceller
+                );
+                return !canceller.isCancelled() && p != null ? (Double) p.getB() : Double.NaN;
             }
         } else {
             distanceMatrix = distanceMatrix.clone();
             DistanceMatrix<B, A> transposedDistanceMatrix = new TransposedDistanceMatrixWrapper<>(distanceMatrix);
-            transposedDistanceMatrix.init(languageB, languageA, canceller);
+            transposedDistanceMatrix.init(
+                    languageB,
+                    languageA,
+                    canceller
+            );
             if (canceller.isCancelled()) {
                 return Double.NaN;
             } else {
-                Pair<ReallocationMatrix, Double> p = ComputeReallocationMatrix2.computeWithDistanceMatrixInitialised(languageB, languageA, transposedDistanceMatrix, parameters, canceller);
-                return !canceller.isCancelled() && p != null ? (Double)p.getB() : Double.NaN;
+                Pair<ReallocationMatrix, Double> p = ComputeReallocationMatrix2.computeWithDistanceMatrixInitialised(
+                        languageB,
+                        languageA,
+                        transposedDistanceMatrix,
+                        parameters,
+                        canceller
+                );
+                return !canceller.isCancelled() && p != null ? (Double) p.getB() : Double.NaN;
             }
         }
     }

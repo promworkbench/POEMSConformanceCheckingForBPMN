@@ -1,8 +1,0 @@
-package org.processmining.poemsconformancecheckingforbpmn.algorithms.conformance_checking.poems.bpmn;
-
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.conformance_checking.ConformanceChecking;
-import org.processmining.poemsconformancecheckingforbpmn.models.log.SimplifiedEventLog;
-import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticBPMNDiagram;
-
-public interface BpmnPoemsConformanceCheckingInternal extends ConformanceChecking<StochasticBPMNDiagram, SimplifiedEventLog> {
-}

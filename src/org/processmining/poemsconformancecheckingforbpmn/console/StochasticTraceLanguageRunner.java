@@ -2,7 +2,7 @@ package org.processmining.poemsconformancecheckingforbpmn.console;
 
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.stochastic_language.StochasticLanguageGenerator;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SampleSizeStoppingCriterion;
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.transition.TansitionSamplingStrategyType;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.execution.trace.BpmnPartiallyOrderedTrace;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
 import org.processmining.poemsconformancecheckingforbpmn.models.stochastic.language.StochasticLanguageEntry;
@@ -22,7 +22,7 @@ public class StochasticTraceLanguageRunner {
         this.languageSize = languageSize;
         this.diagramReader = StochasticBPMNDiagramReader.fromFileName();
         this.languageGenerator =
-                StochasticLanguageGenerator.getInstance(TansitionSamplingStrategyType.MOST_PROBABLE, new SampleSizeStoppingCriterion(languageSize), 1000);
+                StochasticLanguageGenerator.getInstance(TansitionSamplingStrategyType.MOST_PROBABLE, prob -> new SampleSizeStoppingCriterion(languageSize));
     }
 
     public static void main(String[] args) throws Exception {

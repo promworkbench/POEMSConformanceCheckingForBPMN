@@ -6,7 +6,7 @@ import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.execution.p
 
 public interface BpmnPOReachabilityGraphPathConstructor {
     static BpmnPOReachabilityGraphPathConstructor getInstance(ExecutableBpmnNodeFactory nodeFactory) {
-        return new BpmnPOReachabilityGraphPathConstructor2(nodeFactory);
+        return new BpmnPOReachabilityGraphPathConstructor2();
     }
 
     BpmnPartiallyOrderedPath construct(BpmnPartiallyOrderedPath basePath, BpmnPartiallyOrderedPath additionPath,

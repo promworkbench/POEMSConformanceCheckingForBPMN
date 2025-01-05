@@ -12,14 +12,14 @@ import org.processmining.poemsconformancecheckingforbpmn.algorithms.conformance_
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.stochastic.statespace.language.trace.StochasticBpmnPORG2StochasticTraceLanguageConverter;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.language.trace.SPORG2StochasticTraceLanguageConverter;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.log.simplifier.XLogSimplifier;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.log.stohastic_language.simplified.SimplifiedLog2StochasticLanguageConverter;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SampleProbabilityMassStoppingCriterion;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SamplingStoppingCriterion;
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.graph.TansitionSamplingStrategyType;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.strategy.transition.TansitionSamplingStrategyType;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.conformance.result.POEMSConformanceCheckingResult;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.execution.marking.BpmnMarking;
 import org.processmining.poemsconformancecheckingforbpmn.models.bpmn.stochastic.language.trace.BpmnStochasticPOTraceLanguage;
@@ -341,16 +341,15 @@ public class ExperimentRunnerAllSamplers {
                         1000
                 );
             }
-            StochasticBpmnPORG2StochasticTraceLanguageConverter languageGenerator =
-                    StochasticBpmnPORG2StochasticTraceLanguageConverter.getInstance(
+            SPORG2StochasticTraceLanguageConverter languageGenerator =
+                    SPORG2StochasticTraceLanguageConverter.getInstance(
                             activityFactory,
                             samplingType,
-                            stopper,
-                            1000
+                            stopper
                     );
             BpmnStochasticPOTraceLanguage modelLanguage = languageGenerator.convert(fixedRg);
 
-            POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory);
+            POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(activityFactory, () -> false);
             POEMSConformanceCheckingResult result = conformanceChecking.calculateConformance(
                     modelLanguage,
                     logLanguage
