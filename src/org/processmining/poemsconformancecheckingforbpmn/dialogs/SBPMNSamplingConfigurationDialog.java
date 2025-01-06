@@ -26,7 +26,7 @@ public class SBPMNSamplingConfigurationDialog extends ProMPropertiesPanel implem
         super(TITLE);
         SlickerFactory slickerFactory = SlickerFactory.instance();
         samplingStrategy = new JComboBox<>(TansitionSamplingStrategyType.values());
-        samplingStrategy.setSelectedItem(TansitionSamplingStrategyType.SIMPLE_RANDOM);
+        samplingStrategy.setSelectedItem(TansitionSamplingStrategyType.MOST_PROBABLE);
         addProperty(
                 "Sampling Strategy",
                 samplingStrategy
@@ -133,7 +133,7 @@ public class SBPMNSamplingConfigurationDialog extends ProMPropertiesPanel implem
 
         if (sampleProbabilityCheckBox.isSelected()) {
             map.put(
-                    SamplingStoppingCriterionType.SAMPLE_SIZE,
+                    SamplingStoppingCriterionType.SAMPLE_PROBABILITY,
                     (SampleProbabilityPrecisionParameters) () -> Probability.of(sampleProbability.getValue().toString())
             );
         }

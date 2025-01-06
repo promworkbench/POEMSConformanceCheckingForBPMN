@@ -25,9 +25,9 @@
              if you have any third party libraries. -->
         <!-- Third party library downloaded from maven repository. -->
 <!--        <dependency conf="lib->default" org="com.opencsv" name="opencsv" rev="5.9"/>-->
-        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-api" rev="2.23.1"/>
-        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-core" rev="2.23.1"/>
-        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-slf4j2-impl" rev="2.23.1"/>
+<!--        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-api" rev="2.23.1"/>-->
+<!--        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-core" rev="2.23.1"/>-->
+<!--        <dependency conf="lib->default" org="org.apache.logging.log4j" name="log4j-slf4j2-impl" rev="2.23.1"/>-->
         <!-- dependency conf="lib->default" org="org.reflections" name="reflections" rev="0.9.10" /-->
         <!-- Third party library downloaded from ProM library. -->
         <!-- dependency conf="lib->default" org="prom-libs" name="opencsv" rev="2.4-patched" transitive="false" /-->

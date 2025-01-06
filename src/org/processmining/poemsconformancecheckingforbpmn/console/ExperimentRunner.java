@@ -12,11 +12,11 @@ import org.processmining.poemsconformancecheckingforbpmn.algorithms.conformance_
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnNoOptionToCompleteException;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.statespace.BpmnUnboundedException;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.bpmn.stochastic.statespace.StochasticBpmn2POReachabilityGraphConverter;
-import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.language.trace.SPORG2StochasticTraceLanguageConverter;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.log.simplifier.XLogSimplifier;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.log.stohastic_language.simplified.SimplifiedLog2StochasticLanguageConverter;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalysis;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.analyzer.StochasticReachabilityGraphStaticAnalyzer;
+import org.processmining.poemsconformancecheckingforbpmn.algorithms.inputs.reachability_graph.stochastic.language.trace.SPORG2StochasticTraceLanguageConverter;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.CompositeSamplingStoppingCriterion;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SampleProbabilityMassStoppingCriterion;
 import org.processmining.poemsconformancecheckingforbpmn.algorithms.utils.stochastics.sampling.stopping.SampleSizeStoppingCriterion;
@@ -35,8 +35,6 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticFlow;
 import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochastic.StochasticGateway;
 import org.processmining.stochasticbpmn.models.stochastic.Probability;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -48,7 +46,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExperimentRunner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleRunner.class);
+    //    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleRunner.class);
     private final ObjectReader<File, XLog> logReader;
     private final SimplifiedLog2StochasticLanguageConverter slog2slConverter;
     private final ObjectReader<File, StochasticBPMNDiagram> modelReader;
@@ -141,15 +139,14 @@ public class ExperimentRunner {
                     try {
                         for (double p = 0.1; p <= 1; p += 0.1) {
 //                        for (int numTrace : new int[]{10, 20, 30, 50, 100, 150, 200, 250, 300, 500}) {
-                            ExperimentResult result =
-                                    runExperiments(
-                                            logLanguage,
-                                            model,
-                                            activityFactory,
-                                            TansitionSamplingStrategyType.MOST_PROBABLE,
-                                            Probability.of(p),
-                                            Integer.MAX_VALUE
-                                    );
+                            ExperimentResult result = runExperiments(
+                                    logLanguage,
+                                    model,
+                                    activityFactory,
+                                    TansitionSamplingStrategyType.MOST_PROBABLE,
+                                    Probability.of(p),
+                                    Integer.MAX_VALUE
+                            );
 //                        System.out.printf("%s: %s\n", modelFileVariant.getKey(), result);
                             recordModelInfo(
                                     logFile.getKey() + "_" + modelFileVariant.getKey() + "_" + p,
@@ -158,8 +155,7 @@ public class ExperimentRunner {
                             );
                             recordResults(
                                     logFile.getKey() + "_" + modelFileVariant.getKey() + "_" + p,
-                                    resultsInfoTB
-                                    ,
+                                    resultsInfoTB,
                                     result,
                                     modelFileVariant.getKey()
                             );
@@ -171,23 +167,33 @@ public class ExperimentRunner {
                             );
                         }
                     } catch (Exception e) {
-                        LOGGER.error(
+                        System.err.printf(
+                                "Failure to execute %s",
+                                modelFileVariant.getValue().getParentFile().getName()
+                        );
+                        e.printStackTrace();
+/*                        LOGGER.error(
                                 String.format(
                                         "Failure to execute %s",
                                         modelFileVariant.getValue().getParentFile().getName()
                                 ),
                                 e
-                        );
+                        );*/
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error(
+                System.err.printf(
+                        "Failure to read log from %s",
+                        logFile.getValue().getPath()
+                );
+                e.printStackTrace();
+/*                LOGGER.error(
                         String.format(
                                 "Failure to read log from %s",
                                 logFile.getValue().getPath()
                         ),
                         e
-                );
+                );*/
             }
         }
         writeResults(
@@ -341,17 +347,19 @@ public class ExperimentRunner {
 
                 SPORG2StochasticTraceLanguageConverter languageGenerator =
                         SPORG2StochasticTraceLanguageConverter.getInstance(
-                                activityFactory,
-                                samplingType,
-                                new CompositeSamplingStoppingCriterion(Arrays.asList(
-                                        new SampleProbabilityMassStoppingCriterion(requiredProbability),
-                                        new SampleSizeStoppingCriterion(numTrace)
-                                ))
-                        );
+                        activityFactory,
+                        samplingType,
+                        new CompositeSamplingStoppingCriterion(Arrays.asList(
+                                new SampleProbabilityMassStoppingCriterion(requiredProbability),
+                                new SampleSizeStoppingCriterion(numTrace)
+                        ))
+                );
                 modelLanguage = languageGenerator.convert(fixedRg);
 
-                POEMSConformanceChecking conformanceChecking =
-                        new POEMSConformanceCheckingEMSC24Adapter(activityFactory, () -> false);
+                POEMSConformanceChecking conformanceChecking = new POEMSConformanceCheckingEMSC24Adapter(
+                        activityFactory,
+                        () -> false
+                );
                 result = conformanceChecking.calculateConformance(
                         modelLanguage,
                         logLanguage
@@ -393,10 +401,8 @@ public class ExperimentRunner {
                 "BPMN Edge Count",
                 String.valueOf(result.bpmnDiagram.getEdges().size())
         );
-        long numSGates = result.bpmnDiagram.getNodes().stream()
-                .filter(n -> n instanceof StochasticGateway).count();
-        long numSEdges = result.bpmnDiagram.getEdges().stream()
-                .filter(n -> n instanceof StochasticFlow).count();
+        long numSGates = result.bpmnDiagram.getNodes().stream().filter(n -> n instanceof StochasticGateway).count();
+        long numSEdges = result.bpmnDiagram.getEdges().stream().filter(n -> n instanceof StochasticFlow).count();
         modelInfoTB.put(
                 key,
                 "Stochastic Gates Count",
@@ -458,11 +464,10 @@ public class ExperimentRunner {
         resultsInfoTB.put(
                 key,
                 "Model Language Probability",
-                result.modelLanguage.getProbability().getValue()
-                        .setScale(
-                                5,
-                                RoundingMode.HALF_EVEN
-                        ).stripTrailingZeros().toString()
+                result.modelLanguage.getProbability().getValue().setScale(
+                        5,
+                        RoundingMode.HALF_EVEN
+                ).stripTrailingZeros().toString()
         );
         resultsInfoTB.put(
                 key,
@@ -532,13 +537,11 @@ public class ExperimentRunner {
             );
             for (String rowKey : table.rowMap().keySet()) {
                 Map<String, ?> row = table.rowMap().get(rowKey);
-                String[] nextLine =
-                        ArrayUtils.add(
-                                columns.stream().map(row::get).map(Object::toString).toArray(String[]::new),
-                                0
-                                ,
-                                rowKey
-                        );
+                String[] nextLine = ArrayUtils.add(
+                        columns.stream().map(row::get).map(Object::toString).toArray(String[]::new),
+                        0,
+                        rowKey
+                );
                 csvWriter.writeNext(
                         nextLine,
                         true
@@ -578,8 +581,8 @@ public class ExperimentRunner {
             long numSGates = bpmnDiagram.getNodes().stream().filter(n -> n instanceof StochasticGateway).count();
             long numSEdges = bpmnDiagram.getEdges().stream().filter(n -> n instanceof StochasticFlow).count();
             return String.format(
-                    "%s - #nodes: %d #sgates: %d, #edges: %d, #sedges: %d, %s, languageSize: %d, languageProbability:" +
-                            " %s, executionTime: %d",
+                    "%s - #nodes: %d #sgates: %d, #edges: %d, #sedges: %d, %s, languageSize: %d, " +
+                            "languageProbability:" + " %s, executionTime: %d",
                     ccResult,
                     bpmnDiagram.getNodes().size(),
                     numSGates,

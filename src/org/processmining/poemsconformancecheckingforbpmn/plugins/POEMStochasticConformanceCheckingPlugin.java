@@ -28,7 +28,7 @@ import java.util.function.Supplier;
         returnTypes = {StochasticBPMNConformanceCheckingResult.class},
         help = "BPMN Partially Ordered Earth Movers' Stochastic (POEMS) Conformance Checking. It constructs " +
                 "stochastic languages out of the event log (trace) nad the stochastic BPMN model (partially ordered " + "trace)" + " and then compares these languages using Earth Movers' Distance (EMD).",
-        level = PluginLevel.NightlyBuild,
+        level = PluginLevel.Regular,
         categories = {PluginCategory.ConformanceChecking},
         handlesCancel = true,
         url = "https://github.com/promworkbench/POEMSConformanceCheckingForBPMN",
@@ -51,7 +51,8 @@ public class POEMStochasticConformanceCheckingPlugin {
     @UITopiaVariant(
             affiliation = "RWTH Aachen",
             author = "Aleksandar Kuzmanoski",
-            email = "aleksandar.kuzmanoski@rwth-aachen.de"
+            email = "aleksandar.kuzmanoski@rwth-aachen.de",
+            website = "https://github.com/promworkbench/POEMSConformanceCheckingForBPMN"
     )
     @PluginVariant(
             variantLabel =
