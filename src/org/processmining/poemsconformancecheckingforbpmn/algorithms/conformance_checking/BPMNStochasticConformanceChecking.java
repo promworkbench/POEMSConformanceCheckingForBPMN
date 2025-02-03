@@ -13,7 +13,7 @@ import org.processmining.stochasticbpmn.models.graphbased.directed.bpmn.stochast
 public interface BPMNStochasticConformanceChecking<O extends ConformanceCheckingResult> extends ConformanceChecking<StochasticBPMNDiagram, XLog, O> {
 
     /**
-     * Create a POEMS (Partially Ordered Earth Movers') conformance checking service for BPMN.
+     * Create a POEMS (Partially Ordered Earth Movers' Stochastic) conformance checking service for BPMN.
      * For more configuration parameters see {@link BpmnPoemsConformanceChecking}.
      * @return BpmnPoemsConformanceChecking
      */
