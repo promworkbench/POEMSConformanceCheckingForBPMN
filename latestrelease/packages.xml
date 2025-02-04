@@ -1,6 +1,6 @@
 
 					<packages>
-						<package name="POEMSConformanceCheckingForBPMN" version="6.15.8" os="all" url="POEMSConformanceCheckingForBPMN/POEMSConformanceCheckingForBPMN-6.15.8-all.zip" desc="Earth Mover's distance over Partially Ordered Model Paths Stochastic Conformance Checking with BPMN" org="RWTH Aachen University" license="GPL" author="A. Kuzmanoski" auto="false" hasPlugins="true" logo="prom_subtitle_hat_300.png">
+						<package name="POEMSConformanceCheckingForBPMN" version="6.15.10" os="all" url="POEMSConformanceCheckingForBPMN/POEMSConformanceCheckingForBPMN-6.15.10-all.zip" desc="Earth Mover's distance over Partially Ordered Model Paths Stochastic Conformance Checking with BPMN" org="RWTH Aachen University" license="GPL" author="A. Kuzmanoski" auto="false" hasPlugins="true" logo="prom_subtitle_hat_300.png">
 				        <dependency org="prom" name="ProM-Plugins" rev="latest" changing="true" transitive="true"/>
         <dependency org="prom" name="BasicUtils" rev="latest" changing="true" transitive="true"/>
         <dependency org="prom" name="Widgets" rev="latest" changing="true" transitive="true"/>
