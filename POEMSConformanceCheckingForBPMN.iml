@@ -273,10 +273,6 @@
           <root url="jar://$USER_HOME$/.ivy2/cache/prom/StochasticLabelledPetriNets/jars/StochasticLabelledPetriNets-latest.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/prom/LTL2Automaton/jars/LTL2Automaton-latest.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/fm.void.jetm/jetm/jars/jetm-1.2.3.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-api/jars/log4j-api-2.23.1.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-core/jars/log4j-core-2.23.1.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-slf4j2-impl/jars/log4j-slf4j2-impl-2.23.1.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-2.0.9.jar!/" />
         </CLASSES>
         <JAVADOC>
           <root url="jar://$USER_HOME$/.ivy2/cache/junit/junit/javadocs/junit-4.12-javadoc.jar!/" />
@@ -400,7 +396,6 @@
           <root url="jar://$USER_HOME$/.ivy2/cache/com.sun.activation/jakarta.activation/javadocs/jakarta.activation-1.2.2-javadoc.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/com.formdev/flatlaf/javadocs/flatlaf-2.0-javadoc.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/nz.ac.waikato.cms.weka/optics_dbScan/javadocs/optics_dbScan-1.0.4-javadoc.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.slf4j/slf4j-api/javadocs/slf4j-api-2.0.9-javadoc.jar!/" />
         </JAVADOC>
         <SOURCES>
           <root url="jar://$USER_HOME$/.ivy2/cache/junit/junit/sources/junit-4.12-sources.jar!/" />
@@ -544,10 +539,6 @@
           <root url="jar://$USER_HOME$/.ivy2/cache/com.formdev/flatlaf/sources/flatlaf-2.0-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/nz.ac.waikato.cms.weka/optics_dbScan/sources/optics_dbScan-1.0.4-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/fm.void.jetm/jetm/sources/jetm-1.2.3-sources.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-api/sources/log4j-api-2.23.1-sources.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-core/sources/log4j-core-2.23.1-sources.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.logging.log4j/log4j-slf4j2-impl/sources/log4j-slf4j2-impl-2.23.1-sources.jar!/" />
-          <root url="jar://$USER_HOME$/.ivy2/cache/org.slf4j/slf4j-api/sources/slf4j-api-2.0.9-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>

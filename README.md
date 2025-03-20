@@ -12,7 +12,7 @@ This method has two main inputs: a stochastic BPMN and an event log.
 Acquiring the event log (XES) is a standard procedure in the Process Mining community.
 To learn more about the format of the stochastic BPMN and how to acquire it, please refer to the [SBPMN ProM GitHub package repo](https://github.com/promworkbench/StochasticBPMN).
 ### In ProM
-![prom_plugins.png](resources/prom_plugins.png)
+![prom_plugins_anonymized.png](resources/prom_plugins_anonymized.png)
 ![POEMS Conformance Checking for BPMN Plugin.png](resources/POEMS%20Conformance%20Checking%20for%20BPMN%20Plugin.png)
 ### Java
 Very basic usage with default configuration.

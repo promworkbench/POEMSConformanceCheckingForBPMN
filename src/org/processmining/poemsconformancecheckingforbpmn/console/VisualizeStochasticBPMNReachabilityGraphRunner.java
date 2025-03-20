@@ -28,11 +28,11 @@ public class VisualizeStochasticBPMNReachabilityGraphRunner {
 
     public static void main(String[] args) throws Exception {
         VisualizeStochasticBPMNReachabilityGraphRunner visualizer = new VisualizeStochasticBPMNReachabilityGraphRunner();
-        visualizer.visualize("/home/aleks/Documents/DataResources/ProcessMining/StochasticPetriNets/Logs/Payment process of Common Agricultural Policy (BPI Challenge 2018)/bpic18ref_DFM_FDE.pnml");
+        visualizer.visualize("/home/aleks/Documents/DataResources/ProcessMining/BPMN/Logs/Handling of Compensation Requests/Hand Made/Instance - BPMN - Handling of Compensation Requests with Livelock.bpmn");
     }
 
     final void visualize(String bpmnPath) throws Exception {
-        StochasticBPMNDiagram diagram = spnDiagramReader.read(bpmnPath);
+        StochasticBPMNDiagram diagram = diagramReader.read(bpmnPath);
         ReachabilityGraph rg = sbpmn2Rg.convert(diagram);
         StochasticReachabilityGraphStaticAnalysis<BpmnMarking> rgAnalysisResult = rgAnalyzer.analyze(rg);
         Dot graphViz = rgAnalysisResult.toGraphViz();

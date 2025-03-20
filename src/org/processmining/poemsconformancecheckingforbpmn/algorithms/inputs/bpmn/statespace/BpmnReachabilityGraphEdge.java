@@ -17,7 +17,7 @@ public class BpmnReachabilityGraphEdge {
 
     @Override
     public String toString() {
-        return path.toString();
+        return path.toGraphViz().toString();
     }
 
     @Override
