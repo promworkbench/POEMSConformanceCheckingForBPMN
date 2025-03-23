@@ -1,4 +1,4 @@
-# POEM Stochastic Conformance Checking for BPMN
+# Stochastic BPMN and Their Conformance
 Partially Ordered Earth Movers' Stochastic (POEMS) Conformance Checking for BPMN
 ## What is it?
 ![Illustration - BPMN POEMS Conformance Checking.png](resources/Illustration%20-%20BPMN%20POEMS%20Conformance%20Checking.png)
